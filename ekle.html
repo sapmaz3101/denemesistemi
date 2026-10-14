@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deneme Bilgileri Sistemi</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+    .container { max-width: 100%; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; }
+    header { background: #2c3e50; color: #fff; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    header h1 { font-size: 20px; }
+    nav { display: flex; flex-wrap: wrap; gap: 5px; }
+    nav button { background: transparent; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: background 0.2s; font-weight: 600; }
+    nav button:hover { background: rgba(255,255,255,0.15); }
+    nav button.aktif { background: #667eea; }
+    main { padding: 30px; }
+    .sayfa { display: none; }
+    .sayfa.aktif { display: block; }
+    h2 { color: #2c3e50; margin-bottom: 20px; font-size: 22px; }
+    h2:not(:first-child) { margin-top: 30px; }
+    .form-grup { margin-bottom: 15px; display: flex; flex-direction: column; }
+    .form-grup label { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
+    input, select { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: #fff; }
+    input:focus, select:focus { outline: none; border-color: #667eea; }
+    button.btn { background: #667eea; color: #fff; border: none; padding: 11px 22px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    button.btn:hover { background: #5568d3; }
+    button.btn.yesil { background: #27ae60; }
+    button.btn.yesil:hover { background: #219150; }
+    button.btn.kirmizi { background: #e74c3c; }
+    button.btn.kirmizi:hover { background: #c0392b; }
+    button.btn.kucuk { padding: 6px 12px; font-size: 12px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .kart { background: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+    .kart.yesil { border-left-color: #27ae60; background: #f0fdf4; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+    th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #eee; white-space: nowrap; }
+    td.sol { text-align: left; }
+    th { background: #2c3e50; color: #fff; font-weight: 600; font-size: 11px; text-transform: uppercase; position: sticky; top: 0; }
+    th.turkce { background: #e74c3c; }
+    th.sosyal { background: #f39c12; }
+    th.matematik { background: #3498db; }
+    th.fen { background: #27ae60; }
+    th.toplam { background: #8e44ad; }
+    tr:nth-child(even) { background: #f8f9fa; }
+    tr:hover { background: #eef2ff; }
+    .rozet { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .rozet.altin { background: #ffd700; color: #333; }
+    .rozet.gumus { background: #c0c0c0; color: #333; }
+    .rozet.bronz { background: #cd7f32; color: #fff; }
+    .bos-mesaj { text-align: center; color: #999; padding: 40px; font-style: italic; }
+    .istatistik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 25px 0; }
+    .istatistik-kart { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 20px; border-radius: 10px; text-align: center; }
+    .istatistik-kart .sayi { font-size: 28px; font-weight: 700; }
+    .istatistik-kart .etiket { font-size: 13px; opacity: 0.9; margin-top: 5px; }
+    .excel-zone { border: 3px dashed #27ae60; border-radius: 10px; padding: 40px; text-align: center; background: #f0fdf4; cursor: pointer; transition: all 0.2s; }
+    .excel-zone:hover { background: #dcfce7; border-color: #16a34a; }
+    .excel-zone.dragover { background: #bbf7d0; border-color: #16a34a; transform: scale(1.02); }
+    .excel-zone .ikon { font-size: 48px; margin-bottom: 10px; }
+    .excel-zone .baslik { font-size: 18px; font-weight: 700; color: #166534; margin-bottom: 6px; }
+    .excel-zone .aciklama { font-size: 13px; color: #4b5563; }
+    .bilgi-kutu { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; color: #1e40af; }
+    .onizleme { max-height: 500px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .yukleme-mesaji { margin-top: 15px; padding: 12px; border-radius: 6px; font-size: 14px; }
+    .tablo-scroll { overflow-x: auto; max-width: 100%; }
+    .deneme-liste-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #667eea; }
+    .deneme-liste-item:hover { background: #eef2ff; }
+    .deneme-liste-item .bilgi { flex: 1; }
+    .deneme-liste-item .ad { font-weight: 600; color: #2c3e50; margin-bottom: 3px; }
+    .deneme-liste-item .detay { font-size: 12px; color: #666; }
+    
+    .grafik-kart { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .grafik-baslik { font-size: 16px; font-weight: 700; color: #2c3e50; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .grafik-kutu { position: relative; height: 420px; }
+
+    .veli-hedef-kart { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 14px; padding: 30px; margin: 20px 0; text-align: center; box-shadow: 0 10px 30px rgba(102,126,234,0.3); }
+    .veli-hedef-baslik { font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+    .veli-hedef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 600px; margin: 0 auto; }
+    .veli-hedef-item .sayi { font-size: 42px; font-weight: 800; line-height: 1; }
+    .veli-hedef-item .etiket { font-size: 13px; opacity: 0.9; margin-top: 8px; }
+    
+    .veli-deneme-kart { background: #fff; border: 2px solid #667eea; border-radius: 14px; padding: 25px; margin: 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    .veli-deneme-kart.son { border-color: #27ae60; background: linear-gradient(135deg, #f0fdf4, #dcfce7); }
+    .veli-deneme-baslik { font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .veli-deneme-baslik .badge { background: #27ae60; color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 20px; margin-left: auto; }
+    .veli-deneme-baslik .badge.eski { background: #95a5a6; }
+    .veli-deneme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+    .veli-ders-kutu { background: #f8f9fa; border-radius: 8px; padding: 12px; text-align: center; border-top: 3px solid #667eea; }
+    .veli-ders-kutu .ad { font-size: 11px; color: #666; text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+    .veli-ders-kutu .net { font-size: 18px; font-weight: 700; color: #2c3e50; }
+    .veli-ders-kutu.toplam { background: #8e44ad; border-top-color: #6c3483; }
+    .veli-ders-kutu.toplam .ad { color: #e8daef; }
+    .veli-ders-kutu.toplam .net { color: #fff; font-size: 22px; }
+    
+    .veli-uyari-kart { background: #fff3cd; border-left: 5px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; font-size: 14px; color: #856404; }
+    .veli-iyi-kart { background: #d1f2d1; border-left: 5px solid #27ae60; padding: 15px 20px; border-radius: 8px; margin: 15px 0; font-size: 14px; color: #166534; font-weight: 600; }
+
+    /* ==================== GİRİŞ EKRANI ==================== */
+    .giris-ekrani {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .giris-ekrani.gizli { display: none; }
+    .giris-kart {
+      background: #fff;
+      border-radius: 20px;
+      padding: 50px 40px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+      text-align: center;
+      animation: girisAnim 0.5s ease;
+    }
+    @keyframes girisAnim {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .giris-ikon {
+      font-size: 64px;
+      margin-bottom: 15px;
+    }
+    .giris-baslik {
+      font-size: 24px;
+      font-weight: 800;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+    .giris-altbaslik {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .giris-input-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .giris-input {
+      width: 100%;
+      padding: 16px 50px 16px 20px;
+      font-size: 18px;
+      letter-spacing: 4px;
+      text-align: center;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .giris-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+    }
+    .giris-goster {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #999;
+    }
+    .giris-buton {
+      width: 100%;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .giris-buton:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+    }
+    .giris-buton:active { transform: translateY(0); }
+    .giris-hata {
+      color: #e74c3c;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 15px;
+      min-height: 20px;
+    }
+    .giris-hata.gizli { visibility: hidden; }
+    .giris-bilgi {
+      margin-top: 25px;
+      font-size: 12px;
+      color: #999;
+      line-height: 1.6;
+    }
+    .giris-bilgi strong { color: #667eea; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    .shake { animation: shake 0.4s; }
+
+    @media (max-width: 600px) { 
+      .form-grid, .istatistik { grid-template-columns: 1fr; } 
+      .grafik-kutu { height: 320px; } 
+      .veli-hedef-grid { grid-template-columns: 1fr; gap: 15px; }
+      .giris-kart { padding: 35px 25px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== GİRİŞ EKRANI ==================== -->
+  <div class="giris-ekrani" id="girisEkrani">
+    <div class="giris-kart" id="girisKart">
+      <div class="giris-ikon">🔒</div>
+      <div class="giris-baslik">Deneme Bilgileri Sistemi</div>
+      <div class="giris-altbaslik">Devam etmek için şifreyi girin</div>
+      
+      <div class="giris-input-wrap">
+        <input type="password" id="girisSifre" class="giris-input" placeholder="••••" maxlength="20" autocomplete="off">
+        <button class="giris-goster" onclick="sifreGoster()" id="gosterBtn">👁️</button>
+      </div>
+      
+      <button class="giris-buton" onclick="girisYap()">🔓 Giriş Yap</button>
+      <div class="giris-hata gizli" id="girisHata">❌ Yanlış şifre!</div>
+      
+      <div class="giris-bilgi">
+        Varsayılan şifre: <strong>1234</strong><br>
+        (Şifreyi ⚙️ Ayarlar bölümünden değiştirebilirsiniz)
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>📊 Deneme Bilgileri Sistemi</h1>
+      <nav>
+        <button id="tabAna" class="aktif" onclick="sekmeAc('ana')">Ana Sayfa</button>
+        <button id="tabEkle" onclick="sekmeAc('ekle')">Veri Ekle</button>
+        <button id="tabRapor" onclick="sekmeAc('rapor')">Rapor</button>
+        <button id="tabVeli" onclick="sekmeAc('veli')">👨‍👩‍👧 Veli Bilgilendirme</button>
+        <button id="tabDenemeler" onclick="sekmeAc('denemeler')">Denemeler</button>
+        <button id="tabAyarlar" onclick="sekmeAc('ayarlar')">⚙️</button>
+      </nav>
+    </header>
+
+    <main>
+      <div id="sayfaAna" class="sayfa aktif">
+        <h2>Deneme Seç</h2>
+        <div class="form-grup" style="max-width: 420px;">
+          <label for="denemeSec">Deneme:</label>
+          <select id="denemeSec">
+            <option value="">-- Deneme Seçin --</option>
+          </select>
+        </div>
+        <div id="istatistikAlan"></div>
+        <div id="sonucAlan">
+          <p class="bos-mesaj">Sonuçları görmek için bir deneme seçin.</p>
+        </div>
+      </div>
+
+      <div id="sayfaEkle" class="sayfa">
+        <h2>📥 Excel'den Otomatik Yükle</h2>
+
+        <div class="bilgi-kutu">
+          <strong>📌 Tüm dersler ayrı ayrı okunur:</strong> Türkçe, Tarih, Coğrafya, Felsefe, Din Kültürü, Matematik, Geometri, Fizik, Kimya, Biyoloji + Toplam Net.
+        </div>
+
+        <div class="kart yesil">
+          <div class="form-grid">
+            <div class="form-grup">
+              <label>Deneme Adı *</label>
+              <input type="text" id="excelDenemeAd" placeholder="Örn: MİKROORİJİNAL TYT-1">
+            </div>
+            <div class="form-grup">
+              <label>Deneme Tarihi *</label>
+              <input type="date" id="excelDenemeTarih">
+            </div>
+          </div>
+
+          <div class="excel-zone" id="excelZone">
+            <div class="ikon">📊</div>
+            <div class="baslik">Excel Dosyasını Buraya Sürükleyin</div>
+            <div class="aciklama">veya tıklayarak seçin (.xlsx veya .xls)</div>
+            <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none">
+          </div>
+
+          <div id="dosyaBilgi"></div>
+          <div id="onizlemeAlan"></div>
+          <div id="yukleButonAlan" style="margin-top: 15px;"></div>
+        </div>
+
+        <h2>🎯 Hedef Net Belirle</h2>
+        <div class="kart">
+          <div class="form-grid">
+            <div class="form-grup">
+              <label>Öğrenci</label>
+              <select id="hedefOgrenci"></select>
+            </div>
+            <div class="form-grup">
+              <label>Hedef Net</label>
+              <input type="number" id="hedefNet" step="0.5" placeholder="Örn: 110">
+            </div>
+          </div>
+          <button class="btn" onclick="hedefKaydet()">Hedefi Kaydet</button>
+        </div>
+
+        <h2>➕ Manuel Deneme Ekle</h2>
+        <div class="kart">
+          <div class="form-grid">
+            <div class="form-grup">
+              <label>Deneme Adı</label>
+              <input type="text" id="denemeAd" placeholder="Örn: TYT Deneme 3">
+            </div>
+            <div class="form-grup">
+              <label>Tarih</label>
+              <input type="date" id="denemeTarih">
+            </div>
+          </div>
+          <button class="btn" onclick="denemeEkle()">Deneme Ekle</button>
+        </div>
+
+        <h2>👤 Manuel Öğrenci Ekle</h2>
+        <div class="kart">
+          <div class="form-grid">
+            <div class="form-grup">
+              <label>Öğrenci Adı</label>
+              <input type="text" id="ogrenciAd" placeholder="Örn: Ali Veli">
+            </div>
+            <div class="form-grup">
+              <label>Sınıf</label>
+              <input type="text" id="ogrenciSinif" placeholder="Örn: 12-A">
+            </div>
+          </div>
+          <button class="btn" onclick="ogrenciEkle()">Öğrenci Ekle</button>
+        </div>
+      </div>
+
+      <div id="sayfaRapor" class="sayfa">
+        <h2>Öğrenci Raporu</h2>
+        <div class="form-grup" style="max-width: 420px;">
+          <label for="ogrenciSec">Öğrenci Seç:</label>
+          <select id="ogrenciSec">
+            <option value="">-- Öğrenci Seçin --</option>
+          </select>
+        </div>
+        <div id="raporAlan">
+          <p class="bos-mesaj">Raporu görmek için öğrenci seçin.</p>
+        </div>
+      </div>
+
+      <div id="sayfaVeli" class="sayfa">
+        <h2>👨‍👩‍👧 Veli Bilgilendirme</h2>
+        <div class="form-grup" style="max-width: 420px;">
+          <label for="veliOgrenciSec">Öğrenci Seç:</label>
+          <select id="veliOgrenciSec">
+            <option value="">-- Öğrenci Seçin --</option>
+          </select>
+        </div>
+        <div id="veliAlan">
+          <p class="bos-mesaj">Veli bilgilendirmesi için öğrenci seçin.</p>
+        </div>
+      </div>
+
+      <div id="sayfaDenemeler" class="sayfa">
+        <h2>📋 Kayıtlı Denemeler</h2>
+        <div class="bilgi-kutu">
+          Buradan kayıtlı denemeleri görebilir ve silebilirsiniz. Bir denemeyi silerseniz, o denemeye ait tüm sonuçlar da silinir.
+        </div>
+        <div id="denemeListeAlan"></div>
+      </div>
+
+      <div id="sayfaAyarlar" class="sayfa">
+        <h2>⚙️ Ayarlar ve Veri Yönetimi</h2>
+        
+        <div class="kart" style="border-left-color: #667eea; background: #eff6ff;">
+          <h3 style="margin-bottom: 12px; color: #2c3e50;">🔑 Şifre Değiştir</h3>
+          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Sisteme giriş şifresini değiştirin. Varsayılan şifre: <b>1234</b></p>
+          <div class="form-grid">
+            <div class="form-grup">
+              <label>Mevcut Şifre</label>
+              <input type="password" id="mevcutSifre" placeholder="Mevcut şifre">
+            </div>
+            <div class="form-grup">
+              <label>Yeni Şifre</label>
+              <input type="password" id="yeniSifre" placeholder="Yeni şifre">
+            </div>
+          </div>
+          <div class="form-grup">
+            <label>Yeni Şifre (Tekrar)</label>
+            <input type="password" id="yeniSifreTekrar" placeholder="Yeni şifre tekrar">
+          </div>
+          <button class="btn" onclick="sifreDegistir()">🔒 Şifreyi Değiştir</button>
+        </div>
+
+        <div class="kart">
+          <h3 style="margin-bottom: 12px; color: #2c3e50;">📊 Veri İstatistikleri</h3>
+          <div id="veriIstatistik"></div>
+        </div>
+
+        <div class="kart" style="border-left-color: #e74c3c; background: #fef2f2;">
+          <h3 style="margin-bottom: 12px; color: #991b1b;">⚠️ Tehlikeli İşlemler</h3>
+          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Aşağıdaki buton tüm verileri siler. Bu işlem geri alınamaz.</p>
+          <button class="btn kirmizi" onclick="tumVeriyiSil()">🗑️ Tüm Verileri Sil</button>
+        </div>
+
+        <div class="kart">
+          <h3 style="margin-bottom: 12px; color: #2c3e50;">💾 Yedekleme</h3>
+          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Verilerinizi JSON olarak indirip başka bilgisayara taşıyabilirsiniz.</p>
+          <button class="btn" onclick="veriYedekle()" style="margin-right: 10px;">⬇️ Yedek İndir</button>
+          <button class="btn yesil" onclick="document.getElementById('yedekYukle').click()">⬆️ Yedek Yükle</button>
+          <input type="file" id="yedekYukle" accept=".json" style="display:none" onchange="yedekYukleIsle(event)">
+        </div>
+
+        <div class="kart">
+          <h3 style="margin-bottom: 12px; color: #2c3e50;">🚪 Oturum</h3>
+          <button class="btn kirmizi" onclick="cikisYap()">🚪 Çıkış Yap</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="genelMesaj" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+  <script>
+    // ==================== ŞİFRE & GİRİŞ SİSTEMİ ====================
+    const VARSAYILAN_SIFRE = '1234';
+    
+    function sifreAl() {
+      return localStorage.getItem('denemeSifre') || VARSAYILAN_SIFRE;
+    }
+    
+    function girisYap() {
+      const girilen = document.getElementById('girisSifre').value;
+      const hata = document.getElementById('girisHata');
+      const kart = document.getElementById('girisKart');
+      
+      if (girilen === sifreAl()) {
+        // Başarılı giriş
+        sessionStorage.setItem('denemeGiris', '1');
+        document.getElementById('girisEkrani').classList.add('gizli');
+        hata.classList.add('gizli');
+        document.getElementById('girisSifre').value = '';
+        
+        // Verileri başlat
+        veri = veriOku();
+        if (!veri.hedefler) veri.hedefler = {};
+        denemeleriYukle();
+        veriIstatistikGoster();
+        hedefSelectDoldur();
+      } else {
+        // Yanlış şifre
+        hata.classList.remove('gizli');
+        kart.classList.add('shake');
+        setTimeout(function() { kart.classList.remove('shake'); }, 400);
+        document.getElementById('girisSifre').value = '';
+        document.getElementById('girisSifre').focus();
+      }
+    }
+    
+    function sifreGoster() {
+      const input = document.getElementById('girisSifre');
+      const btn = document.getElementById('gosterBtn');
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+    
+    // Enter tuşu ile giriş
+    document.getElementById('girisSifre').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') girisYap();
+    });
+    
+    // Sayfa açıldığında oturum kontrolü
+    window.addEventListener('DOMContentLoaded', function() {
+      if (sessionStorage.getItem('denemeGiris') === '1') {
+        document.getElementById('girisEkrani').classList.add('gizli');
+        veri = veriOku();
+        if (!veri.hedefler) veri.hedefler = {};
+        denemeleriYukle();
+        veriIstatistikGoster();
+        hedefSelectDoldur();
+      } else {
+        // Otomatik odaklan
+        setTimeout(function() {
+          document.getElementById('girisSifre').focus();
+        }, 100);
+      }
+    });
+    
+    function sifreDegistir() {
+      const mevcut = document.getElementById('mevcutSifre').value;
+      const yeni = document.getElementById('yeniSifre').value;
+      const yeniTekrar = document.getElementById('yeniSifreTekrar').value;
+      
+      if (mevcut !== sifreAl()) {
+        return mesaj('❌ Mevcut şifre yanlış!', 'hata');
+      }
+      if (yeni.length < 3) {
+        return mesaj('❌ Yeni şifre en az 3 karakter olmalı!', 'hata');
+      }
+      if (yeni !== yeniTekrar) {
+        return mesaj('❌ Yeni şifreler eşleşmiyor!', 'hata');
+      }
+      
+      localStorage.setItem('denemeSifre', yeni);
+      mesaj('✅ Şifre başarıyla değiştirildi!');
+      
+      document.getElementById('mevcutSifre').value = '';
+      document.getElementById('yeniSifre').value = '';
+      document.getElementById('yeniSifreTekrar').value = '';
+    }
+    
+    function cikisYap() {
+      if (!confirm('Oturumu kapatmak istediğinize emin misiniz?')) return;
+      sessionStorage.removeItem('denemeGiris');
+      location.reload();
+    }
+
+    // ==================== DERS TANIMLARI ====================
+    const DERSLER = [
+      { key: 'turkce_net',    ad: 'Türkçe' },
+      { key: 'tarih_net',     ad: 'Tarih' },
+      { key: 'cografya_net',  ad: 'Coğrafya' },
+      { key: 'felsefe_net',   ad: 'Felsefe' },
+      { key: 'din_net',       ad: 'Din Kültürü' },
+      { key: 'matematik_net', ad: 'Matematik' },
+      { key: 'geometri_net',  ad: 'Geometri' },
+      { key: 'fizik_net',     ad: 'Fizik' },
+      { key: 'kimya_net',     ad: 'Kimya' },
+      { key: 'biyoloji_net',  ad: 'Biyoloji' }
+    ];
+
+    const NO_SUTUN = 0;
+    const SUBE_SUTUN = 1;
+    const NUMARA_SUTUN = 2;
+    const AD_SUTUN = 3;
+    const ALAN_SUTUN = 4;
+
+    let grafikInstance = null;
+
+    // ==================== VERİ YÖNETİMİ ====================
+    function veriOku() {
+      const data = localStorage.getItem('denemeSistemi');
+      if (data) return JSON.parse(data);
+      return { denemeler: [], ogrenciler: [], sonuclar: [], hedefler: {} };
+    }
+
+    function veriKaydet(veri) {
+      localStorage.setItem('denemeSistemi', JSON.stringify(veri));
+    }
+
+    let veri = veriOku();
+    if (!veri.hedefler) veri.hedefler = {};
+    let excelVerisi = null;
+
+    function mesaj(text, tip) {
+      const renk = tip === 'hata' ? '#e74c3c' : tip === 'uyari' ? '#f39c12' : '#27ae60';
+      const el = document.createElement('div');
+      el.style.cssText = 'background:' + renk + ';color:#fff;padding:14px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:10px;font-size:14px;font-weight:600;';
+      el.textContent = text;
+      document.getElementById('genelMesaj').appendChild(el);
+      setTimeout(function() { el.remove(); }, 4000);
+    }
+
+    // ==================== SEKME GEÇİŞİ ====================
+    function sekmeAc(sayfa) {
+      document.querySelectorAll('.sayfa').forEach(function(s) { s.classList.remove('aktif'); });
+      document.querySelectorAll('nav button').forEach(function(b) { b.classList.remove('aktif'); });
+      
+      document.getElementById('sayfa' + sayfa.charAt(0).toUpperCase() + sayfa.slice(1)).classList.add('aktif');
+      document.getElementById('tab' + sayfa.charAt(0).toUpperCase() + sayfa.slice(1)).classList.add('aktif');
+
+      if (sayfa === 'ana') denemeleriYukle();
+      if (sayfa === 'rapor') ogrencileriYukle();
+      if (sayfa === 'veli') veliOgrencileriYukle();
+      if (sayfa === 'ayarlar') veriIstatistikGoster();
+      if (sayfa === 'denemeler') denemeListesiGoster();
+      if (sayfa === 'ekle') hedefSelectDoldur();
+    }
+
+    // ==================== SAYFA 1: ANA SAYFA ====================
+    function denemeleriYukle() {
+      veri = veriOku();
+      const denemeSec = document.getElementById('denemeSec');
+      const secili = denemeSec.value;
+      
+      denemeSec.innerHTML = '<option value="">-- Deneme Seçin --</option>';
+      veri.denemeler.slice().reverse().forEach(function(d) {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.ad + ' (' + d.tarih + ')';
+        denemeSec.appendChild(opt);
+      });
+      
+      if (secili) denemeSec.value = secili;
+    }
+
+    document.getElementById('denemeSec').addEventListener('change', function() {
+      sonuclariGoster(parseInt(this.value));
+    });
+
+    function sonuclariGoster(denemeId) {
+      const sonucAlan = document.getElementById('sonucAlan');
+      const istatistikAlan = document.getElementById('istatistikAlan');
+      
+      if (!denemeId) {
+        sonucAlan.innerHTML = '<p class="bos-mesaj">Sonuçları görmek için bir deneme seçin.</p>';
+        istatistikAlan.innerHTML = '';
+        return;
+      }
+
+      const liste = veri.sonuclar
+        .filter(function(s) { return s.deneme_id === denemeId; })
+        .map(function(s) {
+          const ogr = veri.ogrenciler.find(function(o) { return o.id === s.ogrenci_id; });
+          return Object.assign({}, s, { 
+            ogrenci_ad: ogr ? ogr.ad : 'Bilinmiyor', 
+            sinif: ogr ? ogr.sinif : '-',
+            numara: ogr ? ogr.numara : '',
+            alan: ogr ? ogr.alan : ''
+          });
+        })
+        .sort(function(a, b) { return b.toplam_net - a.toplam_net; });
+
+      if (liste.length === 0) {
+        sonucAlan.innerHTML = '<p class="bos-mesaj">Bu denemeye ait sonuç bulunamadı.</p>';
+        istatistikAlan.innerHTML = '';
+        return;
+      }
+
+      const toplam = liste.length;
+      const ortalama = (liste.reduce(function(s, r) { return s + r.toplam_net; }, 0) / toplam).toFixed(1);
+      const enYuksek = liste[0].toplam_net;
+      const enDusuk = liste[liste.length - 1].toplam_net;
+
+      istatistikAlan.innerHTML =
+        '<div class="istatistik">' +
+          '<div class="istatistik-kart"><div class="sayi">' + toplam + '</div><div class="etiket">Katılımcı</div></div>' +
+          '<div class="istatistik-kart"><div class="sayi">' + ortalama + '</div><div class="etiket">Ortalama Net</div></div>' +
+          '<div class="istatistik-kart"><div class="sayi">' + enYuksek + ' / ' + enDusuk + '</div><div class="etiket">En Yüksek / En Düşük</div></div>' +
+        '</div>';
+
+      let html = '<div class="tablo-scroll"><table><thead><tr>' +
+        '<th>Sıra</th><th>No</th><th>Öğrenci</th><th>Şube</th><th>Alan</th>' +
+        '<th class="turkce">Türkçe</th>' +
+        '<th class="sosyal">Tarih</th>' +
+        '<th class="sosyal">Coğrafya</th>' +
+        '<th class="sosyal">Felsefe</th>' +
+        '<th class="sosyal">Din K.</th>' +
+        '<th class="matematik">Matematik</th>' +
+        '<th class="matematik">Geometri</th>' +
+        '<th class="fen">Fizik</th>' +
+        '<th class="fen">Kimya</th>' +
+        '<th class="fen">Biyoloji</th>' +
+        '<th class="toplam">TOPLAM</th>' +
+        '</tr></thead><tbody>';
+
+      liste.forEach(function(s, i) {
+        let rozet = '';
+        if (i === 0) rozet = '<span class="rozet altin">🥇</span>';
+        else if (i === 1) rozet = '<span class="rozet gumus">🥈</span>';
+        else if (i === 2) rozet = '<span class="rozet bronz">🥉</span>';
+
+        html += '<tr>' +
+          '<td>' + rozet + ' ' + (i + 1) + '</td>' +
+          '<td>' + (s.numara || '-') + '</td>' +
+          '<td class="sol"><strong>' + s.ogrenci_ad + '</strong></td>' +
+          '<td>' + (s.sinif || '-') + '</td>' +
+          '<td>' + (s.alan || '-') + '</td>';
+
+        DERSLER.forEach(function(d) {
+          html += '<td>' + parseFloat(s[d.key] || 0).toFixed(2) + '</td>';
+        });
+
+        html += '<td><strong>' + parseFloat(s.toplam_net || 0).toFixed(2) + '</strong></td>' +
+          '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      sonucAlan.innerHTML = html;
+    }
+
+    // ==================== HEDEF NET ====================
+    function hedefSelectDoldur() {
+      veri = veriOku();
+      const sel = document.getElementById('hedefOgrenci');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">-- Öğrenci Seç --</option>';
+      veri.ogrenciler.slice().sort(function(a, b) { return a.ad.localeCompare(b.ad, 'tr'); }).forEach(function(o) {
+        const opt = document.createElement('option');
+        opt.value = o.id;
+        opt.textContent = o.ad + (o.sinif ? ' (' + o.sinif + ')' : '');
+        sel.appendChild(opt);
+      });
+      sel.onchange = function() {
+        const id = parseInt(this.value);
+        if (id && veri.hedefler && veri.hedefler[id]) {
+          document.getElementById('hedefNet').value = veri.hedefler[id];
+        } else {
+          document.getElementById('hedefNet').value = '';
+        }
+      };
+    }
+
+    function hedefKaydet() {
+      const ogrenciId = parseInt(document.getElementById('hedefOgrenci').value);
+      const hedef = parseFloat(document.getElementById('hedefNet').value);
+      
+      if (!ogrenciId) return mesaj('Öğrenci seçin!', 'hata');
+      if (!hedef || hedef <= 0) return mesaj('Geçerli bir hedef net girin!', 'hata');
+      
+      veri = veriOku();
+      if (!veri.hedefler) veri.hedefler = {};
+      veri.hedefler[ogrenciId] = hedef;
+      veriKaydet(veri);
+      
+      mesaj('✅ Hedef net kaydedildi: ' + hedef);
+    }
+
+    // ==================== VELİ BİLGİLENDİRME ====================
+    function veliOgrencileriYukle() {
+      veri = veriOku();
+      const sel = document.getElementById('veliOgrenciSec');
+      const secili = sel.value;
+      
+      sel.innerHTML = '<option value="">-- Öğrenci Seçin --</option>';
+      veri.ogrenciler.slice().sort(function(a, b) { return a.ad.localeCompare(b.ad, 'tr'); }).forEach(function(o) {
+        const opt = document.createElement('option');
+        opt.value = o.id;
+        opt.textContent = o.ad + (o.sinif ? ' (' + o.sinif + ')' : '');
+        sel.appendChild(opt);
+      });
+      
+      if (secili) {
+        sel.value = secili;
+        veliGoster(parseInt(secili));
+      }
+    }
+
+    document.getElementById('veliOgrenciSec').addEventListener('change', function() {
+      veliGoster(parseInt(this.value));
+    });
+
+    function veliGoster(ogrenciId) {
+      const alan = document.getElementById('veliAlan');
+      
+      if (!ogrenciId) {
+        alan.innerHTML = '<p class="bos-mesaj">Veli bilgilendirmesi için öğrenci seçin.</p>';
+        return;
+      }
+
+      const ogr = veri.ogrenciler.find(function(o) { return o.id === ogrenciId; });
+      if (!ogr) {
+        alan.innerHTML = '<p class="bos-mesaj">Öğrenci bulunamadı.</p>';
+        return;
+      }
+
+      const tumSonuclar = veri.sonuclar
+        .filter(function(s) { return s.ogrenci_id === ogrenciId; })
+        .map(function(s) {
+          const d = veri.denemeler.find(function(x) { return x.id === s.deneme_id; });
+          return Object.assign({}, s, { deneme_ad: d ? d.ad : '-', tarih: d ? d.tarih : '-' });
+        })
+        .sort(function(a, b) { return a.tarih.localeCompare(b.tarih); });
+
+      if (tumSonuclar.length === 0) {
+        alan.innerHTML = '<p class="bos-mesaj">Bu öğrenciye ait sonuç bulunamadı.</p>';
+        return;
+      }
+
+      const sonDeneme = tumSonuclar[tumSonuclar.length - 1];
+      const son3 = tumSonuclar.slice(-3).reverse();
+
+      const hedef = (veri.hedefler && veri.hedefler[ogrenciId]) ? veri.hedefler[ogrenciId] : null;
+      const sonNet = parseFloat(sonDeneme.toplam_net || 0);
+      const kalan = hedef ? (hedef - sonNet) : null;
+
+      let html = '';
+
+      if (hedef) {
+        const kalanRenk = kalan <= 0 ? '#27ae60' : '#ffd700';
+        const kalanYazi = kalan <= 0 
+          ? '🎉 HEDEFE ULAŞILDI!' 
+          : 'Hedefe kalan: ' + kalan.toFixed(2) + ' net';
+        
+        html += '<div class="veli-hedef-kart">' +
+          '<div class="veli-hedef-baslik">🎯 Hedef Bilgisi - ' + ogr.ad + '</div>' +
+          '<div class="veli-hedef-grid">' +
+            '<div class="veli-hedef-item">' +
+              '<div class="sayi">' + hedef.toFixed(1) + '</div>' +
+              '<div class="etiket">HEDEF NET</div>' +
+            '</div>' +
+            '<div class="veli-hedef-item kalan">' +
+              '<div class="sayi" style="color: ' + kalanRenk + ';">' + (kalan > 0 ? kalan.toFixed(1) : '0') + '</div>' +
+              '<div class="etiket">' + (kalan > 0 ? 'HEDEFE KALAN NET' : 'HEDEF TAMAMLANDI') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="margin-top: 20px; font-size: 15px; font-weight: 600; color: ' + (kalan <= 0 ? '#27ae60' : '#ffd700') + ';">' + kalanYazi + '</div>' +
+        '</div>';
+      } else {
+        html += '<div class="veli-uyari-kart">⚠️ Bu öğrenci için hedef net belirlenmemiş. <br><b>Veri Ekle</b> sekmesinden hedef net belirleyebilirsiniz.</div>';
+      }
+
+      html += '<div class="veli-deneme-kart son">' +
+        '<div class="veli-deneme-baslik">📝 SON GİRİLEN DENEME - ' + sonDeneme.deneme_ad + '<span class="badge">SON</span></div>' +
+        '<div style="font-size: 13px; color: #666; margin-bottom: 15px;">📅 ' + sonDeneme.tarih + '</div>';
+      
+      html += '<div class="veli-deneme-grid">';
+      DERSLER.forEach(function(d) {
+        html += '<div class="veli-ders-kutu">' +
+          '<div class="ad">' + d.ad + '</div>' +
+          '<div class="net">' + parseFloat(sonDeneme[d.key] || 0).toFixed(2) + '</div>' +
+        '</div>';
+      });
+      html += '<div class="veli-ders-kutu toplam">' +
+        '<div class="ad">TOPLAM</div>' +
+        '<div class="net">' + parseFloat(sonDeneme.toplam_net || 0).toFixed(2) + '</div>' +
+      '</div>';
+      html += '</div>';
+
+      if (hedef) {
+        if (sonNet >= hedef) {
+          html += '<div class="veli-iyi-kart" style="margin-top: 15px;">🎉 Tebrikler! Bu denemede hedef nete ulaşıldı (' + sonNet.toFixed(2) + ' / ' + hedef.toFixed(1) + ')</div>';
+        } else {
+          html += '<div class="veli-uyari-kart" style="margin-top: 15px;">📌 Bu denemede hedefe ' + kalan.toFixed(2) + ' net kaldı (' + sonNet.toFixed(2) + ' / ' + hedef.toFixed(1) + ')</div>';
+        }
+      }
+
+      html += '</div>';
+
+      html += '<h2 style="margin-top: 30px; font-size: 18px;">📊 Son 3 Deneme</h2>';
+      
+      son3.forEach(function(s, i) {
+        const badge = i === 0 ? '<span class="badge">SON</span>' : '<span class="badge eski">' + (i + 1) + '. SON</span>';
+        
+        html += '<div class="veli-deneme-kart' + (i === 0 ? ' son' : '') + '">' +
+          '<div class="veli-deneme-baslik">📝 ' + s.deneme_ad + badge + '</div>' +
+          '<div style="font-size: 13px; color: #666; margin-bottom: 15px;">📅 ' + s.tarih + '</div>';
+        
+        html += '<div class="veli-deneme-grid">';
+        DERSLER.forEach(function(d) {
+          html += '<div class="veli-ders-kutu">' +
+            '<div class="ad">' + d.ad + '</div>' +
+            '<div class="net">' + parseFloat(s[d.key] || 0).toFixed(2) + '</div>' +
+          '</div>';
+        });
+        html += '<div class="veli-ders-kutu toplam">' +
+          '<div class="ad">TOPLAM</div>' +
+          '<div class="net">' + parseFloat(s.toplam_net || 0).toFixed(2) + '</div>' +
+        '</div>';
+        html += '</div>';
+        
+        if (hedef) {
+          const buNet = parseFloat(s.toplam_net || 0);
+          if (buNet >= hedef) {
+            html += '<div style="margin-top: 12px; font-size: 13px; color: #27ae60; font-weight: 600;">✅ Bu denemede hedefe ulaşıldı</div>';
+          }
+        }
+        
+        html += '</div>';
+      });
+
+      alan.innerHTML = html;
+    }
+
+    // ==================== DENEMELER ====================
+    function denemeListesiGoster() {
+      veri = veriOku();
+      const alan = document.getElementById('denemeListeAlan');
+
+      if (veri.denemeler.length === 0) {
+        alan.innerHTML = '<p class="bos-mesaj">Henüz deneme eklenmemiş.</p>';
+        return;
+      }
+
+      let html = '';
+      veri.denemeler.slice().reverse().forEach(function(d) {
+        const sonucSayisi = veri.sonuclar.filter(function(s) { return s.deneme_id === d.id; }).length;
+        html += '<div class="deneme-liste-item">' +
+          '<div class="bilgi">' +
+            '<div class="ad">📝 ' + d.ad + '</div>' +
+            '<div class="detay">📅 ' + d.tarih + ' • ' + sonucSayisi + ' öğrenci sonucu</div>' +
+          '</div>' +
+          '<button class="btn kirmizi kucuk" onclick="denemeSil(' + d.id + ', \'' + d.ad.replace(/'/g, "\\'") + '\')">🗑️ Sil</button>' +
+        '</div>';
+      });
+
+      alan.innerHTML = html;
+    }
+
+    function denemeSil(denemeId, denemeAd) {
+      if (!confirm('⚠️ "' + denemeAd + '" denemesi silinecek!\n\nBu denemeye ait TÜM öğrenci sonuçları da silinecek.\n\nEmin misiniz?')) return;
+      
+      veri = veriOku();
+      veri.denemeler = veri.denemeler.filter(function(d) { return d.id !== denemeId; });
+      veri.sonuclar = veri.sonuclar.filter(function(s) { return s.deneme_id !== denemeId; });
+      veriKaydet(veri);
+      
+      mesaj('🗑️ "' + denemeAd + '" denemesi silindi');
+      denemeListesiGoster();
+      denemeleriYukle();
+      veriIstatistikGoster();
+    }
+
+    // ==================== EXCEL YÜKLEME ====================
+    const excelZone = document.getElementById('excelZone');
+    const excelFile = document.getElementById('excelFile');
+    const dosyaBilgi = document.getElementById('dosyaBilgi');
+    const onizlemeAlan = document.getElementById('onizlemeAlan');
+    const yukleButonAlan = document.getElementById('yukleButonAlan');
+
+    excelZone.addEventListener('click', function() { excelFile.click(); });
+    excelZone.addEventListener('dragover', function(e) { e.preventDefault(); excelZone.classList.add('dragover'); });
+    excelZone.addEventListener('dragleave', function() { excelZone.classList.remove('dragover'); });
+    excelZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      excelZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) excelDosyaIsle(e.dataTransfer.files[0]);
+    });
+    excelFile.addEventListener('change', function(e) {
+      if (e.target.files.length > 0) excelDosyaIsle(e.target.files[0]);
+    });
+
+    function excelDosyaIsle(file) {
+      dosyaBilgi.innerHTML = '<div class="yukleme-mesaji" style="background: #eff6ff;">⏳ <b>' + file.name + '</b> okunuyor...</div>';
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          let sayfaAdi = workbook.SheetNames[0];
+          if (workbook.SheetNames.indexOf('TYT') !== -1) sayfaAdi = 'TYT';
+          
+          const sayfa = workbook.Sheets[sayfaAdi];
+          const satirlar = XLSX.utils.sheet_to_json(sayfa, { header: 1, defval: '' });
+          
+          let ogrenciler = [];
+          let basladi = false;
+          
+          for (let i = 0; i < satirlar.length; i++) {
+            const satir = satirlar[i];
+            const ilkHucre = String(satir[NO_SUTUN] || '').trim();
+            
+            if (ilkHucre === 'NO' || ilkHucre === 'No') { basladi = true; continue; }
+            
+            if (basladi && ilkHucre && !isNaN(parseInt(ilkHucre))) {
+              const ogr = {
+                no: parseInt(ilkHucre),
+                sube: String(satir[SUBE_SUTUN] || '').trim(),
+                numara: String(satir[NUMARA_SUTUN] || '').trim(),
+                ad: String(satir[AD_SUTUN] || '').trim(),
+                alan: String(satir[ALAN_SUTUN] || '').trim(),
+                turkce_net: parseFloat(satir[7]) || 0,
+                tarih_net: parseFloat(satir[10]) || 0,
+                cografya_net: parseFloat(satir[13]) || 0,
+                felsefe_net: parseFloat(satir[16]) || 0,
+                din_net: parseFloat(satir[19]) || 0,
+                matematik_net: parseFloat(satir[22]) || 0,
+                geometri_net: parseFloat(satir[25]) || 0,
+                fizik_net: parseFloat(satir[28]) || 0,
+                kimya_net: parseFloat(satir[31]) || 0,
+                biyoloji_net: parseFloat(satir[34]) || 0,
+                toplam_net: parseFloat(satir[37]) || 0
+              };
+              if (ogr.ad) ogrenciler.push(ogr);
+            }
+          }
+          
+          if (ogrenciler.length === 0) {
+            dosyaBilgi.innerHTML = '<div class="yukleme-mesaji" style="background: #fee2e2; color: #991b1b;">❌ Veri bulunamadı.</div>';
+            return;
+          }
+          
+          excelVerisi = ogrenciler;
+          
+          dosyaBilgi.innerHTML = '<div class="yukleme-mesaji" style="background: #dcfce7; color: #166534;">✅ <b>' + ogrenciler.length + '</b> öğrenci bulundu.</div>';
+          
+          onizlemeGoster(ogrenciler);
+          yukleButonAlan.innerHTML = '<button class="btn yesil" onclick="excelYukle()" style="width: 100%; padding: 14px; font-size: 16px;">📥 Excel\'i Sisteme Yükle (' + ogrenciler.length + ' öğrenci)</button>';
+        } catch (err) {
+          dosyaBilgi.innerHTML = '<div class="yukleme-mesaji" style="background: #fee2e2; color: #991b1b;">❌ Hata: ' + err.message + '</div>';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function onizlemeGoster(ogrenciler) {
+      let html = '<div class="onizleme"><table><thead><tr>' +
+        '<th>No</th><th>Ad Soyad</th><th>Şube</th><th>Alan</th>';
+      
+      DERSLER.forEach(function(d) {
+        html += '<th>' + d.ad + '</th>';
+      });
+      
+      html += '<th class="toplam">TOPLAM</th></tr></thead><tbody>';
+      
+      ogrenciler.forEach(function(o) {
+        html += '<tr>' +
+          '<td>' + o.no + '</td>' +
+          '<td class="sol"><strong>' + o.ad + '</strong></td>' +
+          '<td>' + o.sube + '</td>' +
+          '<td>' + o.alan + '</td>';
+        
+        DERSLER.forEach(function(d) {
+          html += '<td>' + parseFloat(o[d.key] || 0).toFixed(2) + '</td>';
+        });
+        
+        html += '<td><strong>' + parseFloat(o.toplam_net || 0).toFixed(2) + '</strong></td>' +
+          '</tr>';
+      });
+      
+      html += '</tbody></table></div>';
+      onizlemeAlan.innerHTML = html;
+    }
+
+    function excelYukle() {
+      const denemeAd = document.getElementById('excelDenemeAd').value.trim();
+      const denemeTarih = document.getElementById('excelDenemeTarih').value;
+      
+      if (!denemeAd || !denemeTarih) return mesaj('Lütfen deneme adı ve tarihini girin!', 'hata');
+      if (!excelVerisi || excelVerisi.length === 0) return mesaj('Önce Excel dosyası yükleyin!', 'hata');
+      
+      const denemeId = veri.denemeler.length > 0 
+        ? Math.max.apply(null, veri.denemeler.map(function(d) { return d.id; })) + 1 
+        : 1;
+      
+      veri.denemeler.push({ id: denemeId, ad: denemeAd, tarih: denemeTarih });
+      
+      let yeniOgrenci = 0;
+      let guncellenenOgrenci = 0;
+      
+      excelVerisi.forEach(function(o) {
+        let mevcutOgr = veri.ogrenciler.find(function(x) { return x.ad === o.ad; });
+        
+        let ogrenciId;
+        if (mevcutOgr) {
+          ogrenciId = mevcutOgr.id;
+          mevcutOgr.sinif = o.sube;
+          mevcutOgr.numara = o.numara;
+          mevcutOgr.alan = o.alan;
+          guncellenenOgrenci++;
+        } else {
+          ogrenciId = veri.ogrenciler.length > 0 
+            ? Math.max.apply(null, veri.ogrenciler.map(function(x) { return x.id; })) + 1 
+            : 1;
+          veri.ogrenciler.push({
+            id: ogrenciId, ad: o.ad, sinif: o.sube, numara: o.numara, alan: o.alan
+          });
+          yeniOgrenci++;
+        }
+        
+        veri.sonuclar.push({
+          deneme_id: denemeId,
+          ogrenci_id: ogrenciId,
+          turkce_net: o.turkce_net,
+          tarih_net: o.tarih_net,
+          cografya_net: o.cografya_net,
+          felsefe_net: o.felsefe_net,
+          din_net: o.din_net,
+          matematik_net: o.matematik_net,
+          geometri_net: o.geometri_net,
+          fizik_net: o.fizik_net,
+          kimya_net: o.kimya_net,
+          biyoloji_net: o.biyoloji_net,
+          toplam_net: o.toplam_net
+        });
+      });
+      
+      veriKaydet(veri);
+      
+      mesaj('✅ ' + excelVerisi.length + ' öğrenci yüklendi!');
+      
+      document.getElementById('excelDenemeAd').value = '';
+      document.getElementById('excelDenemeTarih').value = '';
+      excelVerisi = null;
+      dosyaBilgi.innerHTML = '';
+      onizlemeAlan.innerHTML = '';
+      yukleButonAlan.innerHTML = '';
+      excelFile.value = '';
+      
+      sekmeAc('ana');
+    }
+
+    // ==================== MANUEL EKLEME ====================
+    function denemeEkle() {
+      const ad = document.getElementById('denemeAd').value.trim();
+      const tarih = document.getElementById('denemeTarih').value;
+      if (!ad || !tarih) return mesaj('Lütfen tüm alanları doldurun', 'hata');
+
+      veri = veriOku();
+      const yeniId = veri.denemeler.length > 0 ? Math.max.apply(null, veri.denemeler.map(function(d) { return d.id; })) + 1 : 1;
+      veri.denemeler.push({ id: yeniId, ad: ad, tarih: tarih });
+      veriKaydet(veri);
+      mesaj('✅ Deneme eklendi');
+      document.getElementById('denemeAd').value = '';
+      document.getElementById('denemeTarih').value = '';
+    }
+
+    function ogrenciEkle() {
+      const ad = document.getElementById('ogrenciAd').value.trim();
+      const sinif = document.getElementById('ogrenciSinif').value.trim();
+      if (!ad) return mesaj('Öğrenci adı gerekli', 'hata');
+
+      veri = veriOku();
+      const yeniId = veri.ogrenciler.length > 0 ? Math.max.apply(null, veri.ogrenciler.map(function(o) { return o.id; })) + 1 : 1;
+      veri.ogrenciler.push({ id: yeniId, ad: ad, sinif: sinif });
+      veriKaydet(veri);
+      mesaj('✅ Öğrenci eklendi');
+      document.getElementById('ogrenciAd').value = '';
+      document.getElementById('ogrenciSinif').value = '';
+      hedefSelectDoldur();
+    }
+
+    // ==================== RAPOR + GRAFİK ====================
+    function ogrencileriYukle() {
+      veri = veriOku();
+      const ogrenciSec = document.getElementById('ogrenciSec');
+      const secili = ogrenciSec.value;
+      
+      ogrenciSec.innerHTML = '<option value="">-- Öğrenci Seçin --</option>';
+      veri.ogrenciler.slice().sort(function(a, b) { return a.ad.localeCompare(b.ad, 'tr'); }).forEach(function(o) {
+        const opt = document.createElement('option');
+        opt.value = o.id;
+        opt.textContent = o.ad + (o.sinif ? ' (' + o.sinif + ')' : '');
+        ogrenciSec.appendChild(opt);
+      });
+      
+      if (secili) {
+        ogrenciSec.value = secili;
+        raporGoster(parseInt(secili));
+      }
+    }
+
+    document.getElementById('ogrenciSec').addEventListener('change', function() {
+      raporGoster(parseInt(this.value));
+    });
+
+    function raporGoster(ogrenciId) {
+      const raporAlan = document.getElementById('raporAlan');
+      
+      if (grafikInstance) {
+        grafikInstance.destroy();
+        grafikInstance = null;
+      }
+      
+      if (!ogrenciId) {
+        raporAlan.innerHTML = '<p class="bos-mesaj">Raporu görmek için öğrenci seçin.</p>';
+        return;
+      }
+
+      const ogr = veri.ogrenciler.find(function(o) { return o.id === ogrenciId; });
+      const liste = veri.sonuclar
+        .filter(function(s) { return s.ogrenci_id === ogrenciId; })
+        .map(function(s) {
+          const d = veri.denemeler.find(function(x) { return x.id === s.deneme_id; });
+          return Object.assign({}, s, { deneme_ad: d ? d.ad : '-', tarih: d ? d.tarih : '-' });
+        })
+        .sort(function(a, b) { return a.tarih.localeCompare(b.tarih); });
+
+      if (liste.length === 0) {
+        raporAlan.innerHTML = '<p class="bos-mesaj">Bu öğrenciye ait sonuç bulunamadı.</p>';
+        return;
+      }
+
+      const ortalama = (liste.reduce(function(s, r) { return s + r.toplam_net; }, 0) / liste.length).toFixed(1);
+      const netler = liste.map(function(r) { return r.toplam_net; });
+      const enIyi = Math.max.apply(null, netler);
+      const enKotu = Math.min.apply(null, netler);
+
+      let html = '<div class="bilgi-kutu">👤 <b>' + ogr.ad + '</b> - ' + (ogr.sinif || '-') + ' / ' + (ogr.alan || '-') + '</div>';
+      
+      html += '<div class="istatistik">' +
+          '<div class="istatistik-kart"><div class="sayi">' + liste.length + '</div><div class="etiket">Katıldığı Deneme</div></div>' +
+          '<div class="istatistik-kart"><div class="sayi">' + ortalama + '</div><div class="etiket">Ortalama Net</div></div>' +
+          '<div class="istatistik-kart"><div class="sayi">' + enIyi + ' / ' + enKotu + '</div><div class="etiket">En İyi / En Kötü</div></div>' +
+        '</div>';
+
+      html += '<div class="grafik-kart">' +
+        '<div class="grafik-baslik">📊 TOPLAM NET Sütun Grafiği</div>' +
+        '<div class="grafik-kutu"><canvas id="netGrafik"></canvas></div>' +
+        '</div>';
+
+      html += '<div class="tablo-scroll"><table><thead><tr>' +
+        '<th>Deneme</th><th>Tarih</th>';
+      
+      DERSLER.forEach(function(d) {
+        html += '<th>' + d.ad + '</th>';
+      });
+      
+      html += '<th class="toplam">TOPLAM</th></tr></thead><tbody>';
+
+      liste.forEach(function(r) {
+        html += '<tr>' +
+          '<td class="sol">' + r.deneme_ad + '</td>' +
+          '<td>' + r.tarih + '</td>';
+        
+        DERSLER.forEach(function(d) {
+          html += '<td>' + parseFloat(r[d.key] || 0).toFixed(2) + '</td>';
+        });
+        
+        html += '<td><strong>' + parseFloat(r.toplam_net || 0).toFixed(2) + '</strong></td>' +
+          '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      raporAlan.innerHTML = html;
+
+      const etiketler = liste.map(function(r) {
+        return r.deneme_ad.replace('MİKROORİJİNAL ', '').replace('TYT ', '');
+      });
+      const veriler = liste.map(function(r) { return parseFloat(r.toplam_net || 0); });
+      
+      const maxNet = Math.max.apply(null, veriler);
+      const minNet = Math.min.apply(null, veriler);
+      
+      const renkler = veriler.map(function(v) {
+        if (v === maxNet) return 'rgba(39, 174, 96, 0.85)';
+        if (v === minNet) return 'rgba(231, 76, 60, 0.85)';
+        return 'rgba(102, 126, 234, 0.85)';
+      });
+      
+      const kenarliklar = veriler.map(function(v) {
+        if (v === maxNet) return '#27ae60';
+        if (v === minNet) return '#e74c3c';
+        return '#667eea';
+      });
+
+      const ctx = document.getElementById('netGrafik').getContext('2d');
+      grafikInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: etiketler,
+          datasets: [
+            {
+              label: 'Toplam Net',
+              data: veriler,
+              backgroundColor: renkler,
+              borderColor: kenarliklar,
+              borderWidth: 2,
+              borderRadius: 8,
+              borderSkipped: false,
+              maxBarThickness: 80
+            },
+            {
+              label: 'Ortalama (' + ortalama + ')',
+              type: 'line',
+              data: new Array(liste.length).fill(parseFloat(ortalama)),
+              borderColor: '#e74c3c',
+              borderWidth: 2,
+              borderDash: [8, 5],
+              fill: false,
+              pointRadius: 0,
+              pointHoverRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: 'top', labels: { font: { size: 13, weight: '600' }, padding: 15 } },
+            tooltip: {
+              backgroundColor: '#2c3e50',
+              titleFont: { size: 14, weight: '700' },
+              bodyFont: { size: 13 },
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  if (context.dataset.type === 'line') return 'Ortalama: ' + context.parsed.y.toFixed(2) + ' net';
+                  return 'Toplam Net: ' + context.parsed.y.toFixed(2);
+                }
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Toplam Net', font: { size: 13, weight: '600' } }, grid: { color: '#f0f0f0' } },
+            x: { title: { display: true, text: 'Denemeler', font: { size: 13, weight: '600' } }, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 0 } }
+          }
+        },
+        plugins: [{
+          id: 'sutunUstYazi',
+          afterDatasetsDraw: function(chart) {
+            const ctx = chart.ctx;
+            const veriSeti = chart.data.datasets[0];
+            const meta = chart.getDatasetMeta(0);
+            
+            ctx.save();
+            ctx.font = 'bold 13px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = '#2c3e50';
+            
+            meta.data.forEach(function(bar, i) {
+              const deger = veriSeti.data[i];
+              if (deger !== undefined && deger !== null) {
+                ctx.fillText(deger.toFixed(1), bar.x, bar.y - 5);
+              }
+            });
+            
+            ctx.restore();
+          }
+        }]
+      });
+    }
+
+    // ==================== AYARLAR ====================
+    function veriIstatistikGoster() {
+      veri = veriOku();
+      document.getElementById('veriIstatistik').innerHTML =
+        '<table><tbody>' +
+          '<tr><td><strong>Deneme sayısı:</strong></td><td>' + veri.denemeler.length + '</td></tr>' +
+          '<tr><td><strong>Öğrenci sayısı:</strong></td><td>' + veri.ogrenciler.length + '</td></tr>' +
+          '<tr><td><strong>Sonuç kaydı:</strong></td><td>' + veri.sonuclar.length + '</td></tr>' +
+        '</tbody></table>';
+    }
+
+    function tumVeriyiSil() {
+      if (confirm('⚠️ TÜM VERİLER SİLİNECEK!\n\nEmin misiniz?')) {
+        if (confirm('Bu işlem GERİ ALINAMAZ! Son kez onaylıyor musunuz?')) {
+          localStorage.removeItem('denemeSistemi');
+          veri = { denemeler: [], ogrenciler: [], sonuclar: [], hedefler: {} };
+          mesaj('🗑️ Tüm veriler silindi', 'uyari');
+          denemeleriYukle();
+          veriIstatistikGoster();
+        }
+      }
+    }
+
+    function veriYedekle() {
+      const dataStr = JSON.stringify(veriOku(), null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'deneme-sistemi-yedek-' + new Date().toISOString().slice(0,10) + '.json';
+      a.click();
+      mesaj('✅ Yedek indirildi');
+    }
+
+    function yedekYukleIsle(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data.denemeler || !data.ogrenciler || !data.sonuclar) {
+            return mesaj('❌ Geçersiz yedek dosyası', 'hata');
+          }
+          if (!confirm('Mevcut veriler SİLİNECEK ve yedek yüklenecek. Onaylıyor musunuz?')) return;
+          
+          veriKaydet(data);
+          veri = data;
+          mesaj('✅ Yedek yüklendi');
+          veriIstatistikGoster();
+          denemeleriYukle();
+        } catch (err) {
+          mesaj('❌ Hata: ' + err.message, 'hata');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    // ==================== BAŞLANGIÇ ====================
+    // Not: veri yükleme ve hedefSelectDoldur() giriş sonrası yapılır
+  </script>
+</body>
+</html>
