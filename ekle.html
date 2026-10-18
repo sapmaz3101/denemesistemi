@@ -6,6 +6,43 @@
   <title>Deneme Bilgileri Sistemi</title>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- 🔥 FIREBASE BAŞLANGIÇ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgfMSvqlOD1EgNJ_BN0queB5xDWVki8oo",
+      authDomain: "deneme-sistemi-ba0a3.firebaseapp.com",
+      projectId: "deneme-sistemi-ba0a3",
+      storageBucket: "deneme-sistemi-ba0a3.firebasestorage.app",
+      messagingSenderId: "1065043330826",
+      appId: "1:1065043330826:web:cac38baf7dd30a721e1cf3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    signInAnonymously(auth).catch(function(err) {
+      console.error('Auth hatası:', err);
+    });
+
+    onAuthStateChanged(auth, function(user) {
+      if (user) {
+        window.firebaseDB = { db, doc, setDoc, onSnapshot, auth };
+        window.firebaseHazir = true;
+        window.dispatchEvent(new Event('firebaseHazir'));
+        console.log('🔥 Firebase hazır, kullanıcı:', user.uid);
+      }
+    });
+  </script>
+  <!-- 🔥 FIREBASE BİTİŞ -->
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
     body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
@@ -39,7 +76,7 @@
     table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
     th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #eee; white-space: nowrap; }
     td.sol { text-align: left; }
-    th { background: #2c3e50; color: #fff; font-weight: 600; font-size: 11px; text-transform: uppercase; position: sticky; top: 0; }
+    th { background: #2c3e50; color: #fff; font-weight: 600; font-size: 11px; text-transform: uppercase; }
     th.turkce { background: #e74c3c; }
     th.sosyal { background: #f39c12; }
     th.matematik { background: #3498db; }
@@ -52,7 +89,6 @@
     .rozet.gumus { background: #c0c0c0; color: #333; }
     .rozet.bronz { background: #cd7f32; color: #fff; }
     .rozet.artiran { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
-    
     .bos-mesaj { text-align: center; color: #999; padding: 40px; font-style: italic; }
     .istatistik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 25px 0; }
     .istatistik-kart { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 20px; border-radius: 10px; text-align: center; }
@@ -73,17 +109,14 @@
     .deneme-liste-item .bilgi { flex: 1; }
     .deneme-liste-item .ad { font-weight: 600; color: #2c3e50; margin-bottom: 3px; }
     .deneme-liste-item .detay { font-size: 12px; color: #666; }
-    
     .grafik-kart { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .grafik-baslik { font-size: 16px; font-weight: 700; color: #2c3e50; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
     .grafik-kutu { position: relative; height: 420px; }
-
     .veli-hedef-kart { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 14px; padding: 30px; margin: 20px 0; text-align: center; box-shadow: 0 10px 30px rgba(102,126,234,0.3); }
     .veli-hedef-baslik { font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
     .veli-hedef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 600px; margin: 0 auto; }
     .veli-hedef-item .sayi { font-size: 42px; font-weight: 800; line-height: 1; }
     .veli-hedef-item .etiket { font-size: 13px; opacity: 0.9; margin-top: 8px; }
-    
     .veli-deneme-kart { background: #fff; border: 2px solid #667eea; border-radius: 14px; padding: 25px; margin: 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
     .veli-deneme-kart.son { border-color: #27ae60; border-width: 3px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); box-shadow: 0 6px 20px rgba(39,174,96,0.25); }
     .veli-deneme-baslik { font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -103,16 +136,13 @@
     .veli-ders-kutu.toplam .ders-ok.artis { color: #a5f3b8; }
     .veli-ders-kutu.toplam .ders-ok.azalis { color: #ffb3b3; }
     .veli-ders-kutu.toplam .ders-ok.sabit { color: #ddd; }
-    
     .veli-uyari-kart { background: #fff3cd; border-left: 5px solid #ffc107; padding: 15px 20px; border-radius: 8px; margin: 15px 0; font-size: 14px; color: #856404; }
     .veli-iyi-kart { background: #d1f2d1; border-left: 5px solid #27ae60; padding: 15px 20px; border-radius: 8px; margin: 15px 0; font-size: 14px; color: #166534; font-weight: 600; }
-
     .ders-hucre { display: flex; align-items: center; justify-content: center; gap: 4px; }
     .degisim-ok { font-size: 11px; font-weight: 700; line-height: 1; }
     .degisim-ok.artis { color: #27ae60; }
     .degisim-ok.azalis { color: #e74c3c; }
     .degisim-ok.sabit { color: #95a5a6; }
-
     .ozet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
     .ozet-kart { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid #667eea; }
     .ozet-kart.ay { border-top-color: #8e44ad; }
@@ -124,14 +154,11 @@
     .ozet-satir .deger.artis { color: #27ae60; }
     .ozet-satir .deger.azalis { color: #e74c3c; }
     .ozet-satir .deger.notr { color: #95a5a6; }
-
     .ozet-mini-tablo { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 15px; }
     .ozet-mini-tablo th { background: #f8f9fa; color: #555; padding: 8px; text-align: center; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #e5e7eb; position: static; }
     .ozet-mini-tablo td { padding: 8px; text-align: center; border-bottom: 1px solid #f0f0f0; }
     .ozet-mini-tablo tr.aktif-hafta { background: #f0fdf4; font-weight: 700; }
-
     .ozet-bos { text-align: center; color: #999; font-style: italic; padding: 15px; font-size: 13px; }
-
     .giris-ekrani { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .giris-ekrani.gizli { display: none; }
     .giris-kart { background: #fff; border-radius: 20px; padding: 50px 40px; max-width: 420px; width: 100%; box-shadow: 0 30px 80px rgba(0,0,0,0.3); text-align: center; animation: girisAnim 0.5s ease; }
@@ -152,98 +179,25 @@
     .giris-bilgi strong { color: #667eea; }
     @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
     .shake { animation: shake 0.4s; }
-
     .karne-buton-alan { margin: 20px 0; text-align: right; }
     .karne-buton { background: linear-gradient(135deg, #27ae60, #16a34a); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(39,174,96,0.3); transition: all 0.2s; }
     .karne-buton:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(39,174,96,0.4); }
-
-    .veli-ogrenci-baslik {
-      background: linear-gradient(135deg, #2c3e50, #34495e);
-      color: #fff;
-      padding: 18px 25px;
-      border-radius: 12px;
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 10px;
-      letter-spacing: 0.5px;
-      box-shadow: 0 6px 20px rgba(44,62,80,0.25);
-    }
+    .veli-ogrenci-baslik { background: linear-gradient(135deg, #2c3e50, #34495e); color: #fff; padding: 18px 25px; border-radius: 12px; font-size: 22px; font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px; box-shadow: 0 6px 20px rgba(44,62,80,0.25); }
     .veli-ogrenci-baslik small { font-size: 13px; opacity: 0.8; font-weight: 500; display: block; margin-top: 4px; letter-spacing: 0; }
-
-    .filtre-alan {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      margin-bottom: 20px;
-    }
-    .filtre-alan .form-grup {
-      margin-bottom: 0;
-      min-width: 220px;
-    }
-
-    /* ===== GİRMEYENLER BÖLÜMÜ ===== */
-    .girmeyenler-kart {
-      background: #fef2f2;
-      border-left: 5px solid #e74c3c;
-      padding: 20px;
-      border-radius: 10px;
-      margin: 20px 0;
-      box-shadow: 0 2px 8px rgba(231,76,60,0.15);
-    }
-    .girmeyenler-baslik {
-      font-size: 17px;
-      font-weight: 800;
-      color: #991b1b;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .girmeyenler-baslik .sayi-rozet {
-      background: #e74c3c;
-      color: #fff;
-      font-size: 13px;
-      padding: 2px 10px;
-      border-radius: 20px;
-      margin-left: auto;
-    }
-    .girmeyenler-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 8px;
-    }
-    .girmeyen-item {
-      background: #fff;
-      border-left: 3px solid #e74c3c;
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .filtre-alan { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px; }
+    .filtre-alan .form-grup { margin-bottom: 0; min-width: 220px; }
+    .girmeyenler-kart { background: #fef2f2; border-left: 5px solid #e74c3c; padding: 20px; border-radius: 10px; margin: 20px 0; box-shadow: 0 2px 8px rgba(231,76,60,0.15); }
+    .girmeyenler-baslik { font-size: 17px; font-weight: 800; color: #991b1b; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .girmeyenler-baslik .sayi-rozet { background: #e74c3c; color: #fff; font-size: 13px; padding: 2px 10px; border-radius: 20px; margin-left: auto; }
+    .girmeyenler-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+    .girmeyen-item { background: #fff; border-left: 3px solid #e74c3c; padding: 10px 14px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
     .girmeyen-item .isim { font-weight: 600; color: #2c3e50; flex: 1; }
-    .girmeyen-item .sube {
-      background: #fee2e2;
-      color: #991b1b;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: 700;
-    }
-    .girmeyenler-bos {
-      background: #f0fdf4;
-      border-left: 5px solid #27ae60;
-      padding: 20px;
-      border-radius: 10px;
-      margin: 20px 0;
-      text-align: center;
-      color: #166534;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
+    .girmeyen-item .sube { background: #fee2e2; color: #991b1b; font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 700; }
+    .girmeyenler-bos { background: #f0fdf4; border-left: 5px solid #27ae60; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center; color: #166534; font-weight: 600; font-size: 14px; }
+    .baglanti-durum { position: fixed; bottom: 15px; right: 15px; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .baglanti-durum.bekliyor { background: #f39c12; color: #fff; }
+    .baglanti-durum.hazir { background: #27ae60; color: #fff; }
+    .baglanti-durum.hata { background: #e74c3c; color: #fff; }
     @media (max-width: 600px) { 
       .form-grid, .istatistik, .ozet-grid { grid-template-columns: 1fr; } 
       .grafik-kutu { height: 320px; } 
@@ -253,7 +207,6 @@
       .filtre-alan .form-grup { width: 100%; }
       .girmeyenler-grid { grid-template-columns: 1fr; }
     }
-
     @media print {
       .karne-buton-alan { display: none; }
     }
@@ -266,15 +219,12 @@
       <div class="giris-ikon">🔒</div>
       <div class="giris-baslik">Deneme Bilgileri Sistemi</div>
       <div class="giris-altbaslik">Devam etmek için şifreyi girin</div>
-      
       <div class="giris-input-wrap">
         <input type="password" id="girisSifre" class="giris-input" placeholder="••••" maxlength="20" autocomplete="off">
         <button class="giris-goster" onclick="sifreGoster()" id="gosterBtn">👁️</button>
       </div>
-      
       <button class="giris-buton" onclick="girisYap()">🔓 Giriş Yap</button>
       <div class="giris-hata gizli" id="girisHata">❌ Yanlış şifre!</div>
-      
       <div class="giris-bilgi">
         Varsayılan şifre: <strong>1234</strong><br>
         (Şifreyi ⚙️ Ayarlar bölümünden değiştirebilirsiniz)
@@ -298,25 +248,17 @@
     <main>
       <div id="sayfaAna" class="sayfa aktif">
         <h2>Deneme Seç</h2>
-        
         <div class="filtre-alan">
           <div class="form-grup">
             <label for="denemeSec">Deneme:</label>
-            <select id="denemeSec">
-              <option value="">-- Deneme Seçin --</option>
-            </select>
+            <select id="denemeSec"><option value="">-- Deneme Seçin --</option></select>
           </div>
           <div class="form-grup">
             <label for="sinifFiltre">Sınıf / Şube Filtresi:</label>
-            <select id="sinifFiltre">
-              <option value="">Tümü</option>
-            </select>
+            <select id="sinifFiltre"><option value="">Tümü</option></select>
           </div>
         </div>
-
-        <!-- ===== GİRMEYENLER BÖLÜMÜ ===== -->
         <div id="girmeyenlerAlan"></div>
-
         <div id="istatistikAlan"></div>
         <div id="sonucAlan">
           <p class="bos-mesaj">Sonuçları görmek için bir deneme seçin.</p>
@@ -325,11 +267,9 @@
 
       <div id="sayfaEkle" class="sayfa">
         <h2>📥 Excel'den Otomatik Yükle</h2>
-
         <div class="bilgi-kutu">
           <strong>📌 Tüm dersler ayrı ayrı okunur:</strong> Türkçe, Tarih, Coğrafya, Felsefe, Din Kültürü, Matematik, Geometri, Fizik, Kimya, Biyoloji + Toplam Net.
         </div>
-
         <div class="kart yesil">
           <div class="form-grid">
             <div class="form-grup">
@@ -341,14 +281,12 @@
               <input type="date" id="excelDenemeTarih">
             </div>
           </div>
-
           <div class="excel-zone" id="excelZone">
             <div class="ikon">📊</div>
             <div class="baslik">Excel Dosyasını Buraya Sürükleyin</div>
             <div class="aciklama">veya tıklayarak seçin (.xlsx veya .xls)</div>
             <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none">
           </div>
-
           <div id="dosyaBilgi"></div>
           <div id="onizlemeAlan"></div>
           <div id="yukleButonAlan" style="margin-top: 15px;"></div>
@@ -404,9 +342,7 @@
         <h2>Öğrenci Raporu</h2>
         <div class="form-grup" style="max-width: 420px;">
           <label for="ogrenciSec">Öğrenci Seç:</label>
-          <select id="ogrenciSec">
-            <option value="">-- Öğrenci Seçin --</option>
-          </select>
+          <select id="ogrenciSec"><option value="">-- Öğrenci Seçin --</option></select>
         </div>
         <div id="raporAlan">
           <p class="bos-mesaj">Raporu görmek için öğrenci seçin.</p>
@@ -417,9 +353,7 @@
         <h2>👨‍👩‍👧 Veli Bilgilendirme</h2>
         <div class="form-grup" style="max-width: 420px;">
           <label for="veliOgrenciSec">Öğrenci Seç:</label>
-          <select id="veliOgrenciSec">
-            <option value="">-- Öğrenci Seçin --</option>
-          </select>
+          <select id="veliOgrenciSec"><option value="">-- Öğrenci Seçin --</option></select>
         </div>
         <div class="karne-buton-alan">
           <button class="karne-buton" onclick="karneYazdir()">🖨️ Karne Yazdır / PDF Kaydet</button>
@@ -432,14 +366,14 @@
       <div id="sayfaDenemeler" class="sayfa">
         <h2>📋 Kayıtlı Denemeler</h2>
         <div class="bilgi-kutu">
-          Buradan kayıtlı denemeleri görebilir ve silebilirsiniz. Bir denemeyi silerseniz, o denemeye ait tüm sonuçlar da silinir.
+          Buradan kayıtlı denemeleri görebilir ve silebilirsiniz.
         </div>
         <div id="denemeListeAlan"></div>
       </div>
 
       <div id="sayfaAyarlar" class="sayfa">
         <h2>⚙️ Ayarlar ve Veri Yönetimi</h2>
-        
+
         <div class="kart" style="border-left-color: #667eea; background: #eff6ff;">
           <h3 style="margin-bottom: 12px; color: #2c3e50;">🔑 Şifre Değiştir</h3>
           <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Sisteme giriş şifresini değiştirin. Varsayılan şifre: <b>1234</b></p>
@@ -467,19 +401,19 @@
 
         <div class="kart">
           <h3 style="margin-bottom: 12px; color: #2c3e50;">👥 Öğrenci Yönetimi</h3>
-          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Yanlış eklenen öğrencileri silebilirsiniz. (Silinen öğrencinin tüm sonuçları da silinir.)</p>
+          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Yanlış eklenen öğrencileri silebilirsiniz.</p>
           <div id="ogrenciListeAlan"></div>
         </div>
 
         <div class="kart" style="border-left-color: #e74c3c; background: #fef2f2;">
           <h3 style="margin-bottom: 12px; color: #991b1b;">⚠️ Tehlikeli İşlemler</h3>
-          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Aşağıdaki buton tüm verileri siler. Bu işlem geri alınamaz.</p>
+          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Aşağıdaki buton tüm verileri siler.</p>
           <button class="btn kirmizi" onclick="tumVeriyiSil()">🗑️ Tüm Verileri Sil</button>
         </div>
 
         <div class="kart">
           <h3 style="margin-bottom: 12px; color: #2c3e50;">💾 Yedekleme</h3>
-          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Verilerinizi JSON olarak indirip başka bilgisayara taşıyabilirsiniz.</p>
+          <p style="margin-bottom: 12px; color: #666; font-size: 14px;">Verilerinizi JSON olarak indirip taşıyabilirsiniz.</p>
           <button class="btn" onclick="veriYedekle()" style="margin-right: 10px;">⬇️ Yedek İndir</button>
           <button class="btn yesil" onclick="document.getElementById('yedekYukle').click()">⬆️ Yedek Yükle</button>
           <input type="file" id="yedekYukle" accept=".json" style="display:none" onchange="yedekYukleIsle(event)">
@@ -494,100 +428,15 @@
   </div>
 
   <div id="genelMesaj" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+  <div id="baglantiDurum" class="baglanti-durum bekliyor">⏳ Bağlanıyor...</div>
 
   <script>
+    // ═══════════════════════════════════════════════════════
+    // SABİTLER
+    // ═══════════════════════════════════════════════════════
     const VARSAYILAN_SIFRE = '1234';
-    
-    function sifreAl() {
-      return localStorage.getItem('denemeSifre') || VARSAYILAN_SIFRE;
-    }
-    
-    function girisYap() {
-      const girilen = document.getElementById('girisSifre').value;
-      const hata = document.getElementById('girisHata');
-      const kart = document.getElementById('girisKart');
-      
-      if (girilen === sifreAl()) {
-        sessionStorage.setItem('denemeGiris', '1');
-        document.getElementById('girisEkrani').classList.add('gizli');
-        hata.classList.add('gizli');
-        document.getElementById('girisSifre').value = '';
-        
-        veri = veriOku();
-        if (!veri.hedefler) veri.hedefler = {};
-        denemeleriYukle();
-        veriIstatistikGoster();
-        hedefSelectDoldur();
-        sinifFiltreDoldur();
-      } else {
-        hata.classList.remove('gizli');
-        kart.classList.add('shake');
-        setTimeout(function() { kart.classList.remove('shake'); }, 400);
-        document.getElementById('girisSifre').value = '';
-        document.getElementById('girisSifre').focus();
-      }
-    }
-    
-    function sifreGoster() {
-      const input = document.getElementById('girisSifre');
-      const btn = document.getElementById('gosterBtn');
-      if (input.type === 'password') {
-        input.type = 'text';
-        btn.textContent = '🙈';
-      } else {
-        input.type = 'password';
-        btn.textContent = '👁️';
-      }
-    }
-    
-    document.getElementById('girisSifre').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') girisYap();
-    });
-    
-    window.addEventListener('DOMContentLoaded', function() {
-      if (sessionStorage.getItem('denemeGiris') === '1') {
-        document.getElementById('girisEkrani').classList.add('gizli');
-        veri = veriOku();
-        if (!veri.hedefler) veri.hedefler = {};
-        denemeleriYukle();
-        veriIstatistikGoster();
-        hedefSelectDoldur();
-        sinifFiltreDoldur();
-      } else {
-        setTimeout(function() {
-          document.getElementById('girisSifre').focus();
-        }, 100);
-      }
-    });
-    
-    function sifreDegistir() {
-      const mevcut = document.getElementById('mevcutSifre').value;
-      const yeni = document.getElementById('yeniSifre').value;
-      const yeniTekrar = document.getElementById('yeniSifreTekrar').value;
-      
-      if (mevcut !== sifreAl()) {
-        return mesaj('❌ Mevcut şifre yanlış!', 'hata');
-      }
-      if (yeni.length < 3) {
-        return mesaj('❌ Yeni şifre en az 3 karakter olmalı!', 'hata');
-      }
-      if (yeni !== yeniTekrar) {
-        return mesaj('❌ Yeni şifreler eşleşmiyor!', 'hata');
-      }
-      
-      localStorage.setItem('denemeSifre', yeni);
-      mesaj('✅ Şifre başarıyla değiştirildi!');
-      
-      document.getElementById('mevcutSifre').value = '';
-      document.getElementById('yeniSifre').value = '';
-      document.getElementById('yeniSifreTekrar').value = '';
-    }
-    
-    function cikisYap() {
-      if (!confirm('Oturumu kapatmak istediğinize emin misiniz?')) return;
-      sessionStorage.removeItem('denemeGiris');
-      location.reload();
-    }
+    const DOKUMAN_KOLEKSIYON = 'denemeSistemi';
+    const DOKUMAN_ADI = 'anaVeri';
 
     const DERSLER = [
       { key: 'turkce_net',    ad: 'Türkçe' },
@@ -608,57 +457,200 @@
     const AD_SUTUN = 3;
     const ALAN_SUTUN = 4;
 
+    // ═══════════════════════════════════════════════════════
+    // DURUM
+    // ═══════════════════════════════════════════════════════
+    let veri = { denemeler: [], ogrenciler: [], sonuclar: [], hedefler: {} };
+    let firebaseHazirMi = false;
     let grafikInstance = null;
-
-    function veriOku() {
-      const data = localStorage.getItem('denemeSistemi');
-      if (data) return JSON.parse(data);
-      return { denemeler: [], ogrenciler: [], sonuclar: [], hedefler: {} };
-    }
-
-    function veriKaydet(veri) {
-      localStorage.setItem('denemeSistemi', JSON.stringify(veri));
-    }
-
-    let veri = veriOku();
-    if (!veri.hedefler) veri.hedefler = {};
     let excelVerisi = null;
 
+    // ═══════════════════════════════════════════════════════
+    // YARDIMCI FONKSİYONLAR
+    // ═══════════════════════════════════════════════════════
     function mesaj(text, tip) {
       const renk = tip === 'hata' ? '#e74c3c' : tip === 'uyari' ? '#f39c12' : '#27ae60';
       const el = document.createElement('div');
       el.style.cssText = 'background:' + renk + ';color:#fff;padding:14px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:10px;font-size:14px;font-weight:600;';
       el.textContent = text;
-      document.getElementById('genelMesaj').appendChild(el);
-      setTimeout(function() { el.remove(); }, 4000);
+      const alan = document.getElementById('genelMesaj');
+      if (alan) {
+        alan.appendChild(el);
+        setTimeout(function() { el.remove(); }, 4000);
+      }
     }
 
+    function baglantiDurumGuncelle(durum) {
+      const el = document.getElementById('baglantiDurum');
+      if (!el) return;
+      el.className = 'baglanti-durum ' + durum;
+      if (durum === 'hazir') el.textContent = '🔥 Firebase Bağlı';
+      else if (durum === 'hata') el.textContent = '❌ Bağlantı Hatası';
+      else el.textContent = '⏳ Bağlanıyor...';
+    }
+
+    function sifreAl() {
+      return localStorage.getItem('denemeSifre') || VARSAYILAN_SIFRE;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // FIREBASE VERİ KATMANI
+    // ═══════════════════════════════════════════════════════
+    window.addEventListener('firebaseHazir', function() {
+      firebaseHazirMi = true;
+      baglantiDurumGuncelle('hazir');
+      firebaseDinle();
+    });
+
+    function firebaseDinle() {
+      try {
+        const { db, doc, onSnapshot } = window.firebaseDB;
+        const docRef = doc(db, DOKUMAN_KOLEKSIYON, DOKUMAN_ADI);
+
+        onSnapshot(docRef, function(snap) {
+          if (snap.exists()) {
+            const data = snap.data();
+            veri = {
+              denemeler: data.denemeler || [],
+              ogrenciler: data.ogrenciler || [],
+              sonuclar: data.sonuclar || [],
+              hedefler: data.hedefler || {}
+            };
+          } else {
+            veri = { denemeler: [], ogrenciler: [], sonuclar: [], hedefler: {} };
+          }
+          console.log('🔥 Veri güncellendi. Öğrenci:', veri.ogrenciler.length, 'Deneme:', veri.denemeler.length);
+          arayuzuGuncelle();
+        }, function(err) {
+          console.error('Firebase dinleme hatası:', err);
+          baglantiDurumGuncelle('hata');
+          mesaj('❌ Bağlantı hatası: ' + err.message, 'hata');
+        });
+      } catch(e) {
+        console.error(e);
+        baglantiDurumGuncelle('hata');
+      }
+    }
+
+    async function veriKaydet(veriObj) {
+      if (!firebaseHazirMi) {
+        mesaj('❌ Firebase bağlantısı hazır değil', 'hata');
+        return false;
+      }
+      try {
+        const { db, doc, setDoc } = window.firebaseDB;
+        await setDoc(doc(db, DOKUMAN_KOLEKSIYON, DOKUMAN_ADI), veriObj);
+        return true;
+      } catch (err) {
+        console.error('Kayıt hatası:', err);
+        mesaj('❌ Kayıt hatası: ' + err.message, 'hata');
+        return false;
+      }
+    }
+
+    function veriOku() {
+      return veri;
+    }
+
+    function arayuzuGuncelle() {
+      const giris = document.getElementById('girisEkrani');
+      if (giris && giris.classList.contains('gizli')) {
+        try {
+          denemeleriYukle();
+          veriIstatistikGoster();
+          hedefSelectDoldur();
+          sinifFiltreDoldur();
+        } catch(e) { /* henüz hazır değilse geç */ }
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // GİRİŞ
+    // ═══════════════════════════════════════════════════════
+    function girisYap() {
+      const girilen = document.getElementById('girisSifre').value;
+      const hata = document.getElementById('girisHata');
+      const kart = document.getElementById('girisKart');
+
+      if (girilen === sifreAl()) {
+        sessionStorage.setItem('denemeGiris', '1');
+        document.getElementById('girisEkrani').classList.add('gizli');
+        hata.classList.add('gizli');
+        document.getElementById('girisSifre').value = '';
+
+        setTimeout(function() {
+          denemeleriYukle();
+          veriIstatistikGoster();
+          hedefSelectDoldur();
+          sinifFiltreDoldur();
+        }, 500);
+      } else {
+        hata.classList.remove('gizli');
+        kart.classList.add('shake');
+        setTimeout(function() { kart.classList.remove('shake'); }, 400);
+        document.getElementById('girisSifre').value = '';
+        document.getElementById('girisSifre').focus();
+      }
+    }
+
+    function sifreGoster() {
+      const input = document.getElementById('girisSifre');
+      const btn = document.getElementById('gosterBtn');
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    function sifreDegistir() {
+      const mevcut = document.getElementById('mevcutSifre').value;
+      const yeni = document.getElementById('yeniSifre').value;
+      const yeniTekrar = document.getElementById('yeniSifreTekrar').value;
+
+      if (mevcut !== sifreAl()) return mesaj('❌ Mevcut şifre yanlış!', 'hata');
+      if (yeni.length < 3) return mesaj('❌ Yeni şifre en az 3 karakter olmalı!', 'hata');
+      if (yeni !== yeniTekrar) return mesaj('❌ Yeni şifreler eşleşmiyor!', 'hata');
+
+      localStorage.setItem('denemeSifre', yeni);
+      mesaj('✅ Şifre başarıyla değiştirildi!');
+      document.getElementById('mevcutSifre').value = '';
+      document.getElementById('yeniSifre').value = '';
+      document.getElementById('yeniSifreTekrar').value = '';
+    }
+
+    function cikisYap() {
+      if (!confirm('Oturumu kapatmak istediğinize emin misiniz?')) return;
+      sessionStorage.removeItem('denemeGiris');
+      location.reload();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // SEKME YÖNETİMİ
+    // ═══════════════════════════════════════════════════════
     function sekmeAc(sayfa) {
       document.querySelectorAll('.sayfa').forEach(function(s) { s.classList.remove('aktif'); });
       document.querySelectorAll('nav button').forEach(function(b) { b.classList.remove('aktif'); });
-      
       document.getElementById('sayfa' + sayfa.charAt(0).toUpperCase() + sayfa.slice(1)).classList.add('aktif');
       document.getElementById('tab' + sayfa.charAt(0).toUpperCase() + sayfa.slice(1)).classList.add('aktif');
 
-      if (sayfa === 'ana') {
-        denemeleriYukle();
-        sinifFiltreDoldur();
-      }
+      if (sayfa === 'ana') { denemeleriYukle(); sinifFiltreDoldur(); }
       if (sayfa === 'rapor') ogrencileriYukle();
       if (sayfa === 'veli') veliOgrencileriYukle();
-      if (sayfa === 'ayarlar') {
-        veriIstatistikGoster();
-        ogrenciListesiGoster();
-      }
+      if (sayfa === 'ayarlar') { veriIstatistikGoster(); ogrenciListesiGoster(); }
       if (sayfa === 'denemeler') denemeListesiGoster();
       if (sayfa === 'ekle') hedefSelectDoldur();
     }
 
+    // ═══════════════════════════════════════════════════════
+    // DENEMELER
+    // ═══════════════════════════════════════════════════════
     function denemeleriYukle() {
-      veri = veriOku();
       const denemeSec = document.getElementById('denemeSec');
+      if (!denemeSec) return;
       const secili = denemeSec.value;
-      
       denemeSec.innerHTML = '<option value="">-- Deneme Seçin --</option>';
       veri.denemeler.slice().reverse().forEach(function(d) {
         const opt = document.createElement('option');
@@ -666,26 +658,19 @@
         opt.textContent = d.ad + ' (' + d.tarih + ')';
         denemeSec.appendChild(opt);
       });
-      
       if (secili) denemeSec.value = secili;
     }
 
     function sinifFiltreDoldur() {
-      veri = veriOku();
       const sel = document.getElementById('sinifFiltre');
       if (!sel) return;
       const secili = sel.value;
-      
       const siniflar = {};
       veri.ogrenciler.forEach(function(o) {
-        const s1 = (o.sinif || '').trim();
-        if (s1) siniflar[s1] = true;
-        const s2 = (o.sube || '').trim();
-        if (s2) siniflar[s2] = true;
+        const s1 = (o.sinif || '').trim(); if (s1) siniflar[s1] = true;
+        const s2 = (o.sube || '').trim(); if (s2) siniflar[s2] = true;
       });
-      
       const sinifListesi = Object.keys(siniflar).sort(function(a, b) { return a.localeCompare(b, 'tr'); });
-      
       sel.innerHTML = '<option value="">Tümü</option>';
       sinifListesi.forEach(function(s) {
         const opt = document.createElement('option');
@@ -693,24 +678,14 @@
         opt.textContent = s;
         sel.appendChild(opt);
       });
-      
       if (secili && sinifListesi.indexOf(secili) !== -1) sel.value = secili;
     }
-
-    document.getElementById('denemeSec').addEventListener('change', function() {
-      sonuclariGoster(parseInt(this.value));
-    });
-
-    document.getElementById('sinifFiltre').addEventListener('change', function() {
-      const denemeId = parseInt(document.getElementById('denemeSec').value);
-      sonuclariGoster(denemeId);
-    });
 
     function sonuclariGoster(denemeId) {
       const sonucAlan = document.getElementById('sonucAlan');
       const istatistikAlan = document.getElementById('istatistikAlan');
       const girmeyenlerAlan = document.getElementById('girmeyenlerAlan');
-      
+
       if (!denemeId) {
         sonucAlan.innerHTML = '<p class="bos-mesaj">Sonuçları görmek için bir deneme seçin.</p>';
         istatistikAlan.innerHTML = '';
@@ -726,19 +701,14 @@
       const oncekiDenemeler = veri.denemeler
         .filter(function(d) { return d.tarih < seciliDeneme.tarih || (d.tarih === seciliDeneme.tarih && d.id < seciliDeneme.id); })
         .sort(function(a, b) { return a.tarih.localeCompare(b.tarih) || a.id - b.id; });
-      
       const oncekiDeneme = oncekiDenemeler.length > 0 ? oncekiDenemeler[oncekiDenemeler.length - 1] : null;
 
-      // Bu denemeye ait TÜM sonuçlar (filtresiz)
       const tumBuDenemeSonuclar = veri.sonuclar.filter(function(s) { return s.deneme_id === denemeId; });
       const buDenemeyeGirenIds = {};
       tumBuDenemeSonuclar.forEach(function(s) { buDenemeyeGirenIds[s.ogrenci_id] = true; });
 
-      // Sisteme kayıtlı TÜM öğrenciler (bu denemeye girmeyenleri bulmak için)
       const girmeyenOgrenciler = veri.ogrenciler.filter(function(o) {
-        // Bu denemeye girmemişse
         if (buDenemeyeGirenIds[o.id]) return false;
-        // Sınıf filtresi aktifse sadece o sınıftakiler
         if (seciliSinif) {
           const ogrSinif = (o.sinif || '').trim();
           const ogrSube = (o.sube || '').trim();
@@ -747,37 +717,30 @@
         return true;
       }).sort(function(a, b) { return a.ad.localeCompare(b.ad, 'tr'); });
 
-      // Girmeyenler bölümünü oluştur
       if (girmeyenOgrenciler.length > 0) {
         let girmeyenHtml = '<div class="girmeyenler-kart">' +
           '<div class="girmeyenler-baslik">⚠️ Bu Denemeye Girmeyenler <span class="sayi-rozet">' + girmeyenOgrenciler.length + ' öğrenci</span></div>' +
           '<div class="girmeyenler-grid">';
-        
         girmeyenOgrenciler.forEach(function(o) {
           const sube = o.sinif || o.sube || '-';
-          girmeyenHtml += '<div class="girmeyen-item">' +
-            '<span class="isim">👤 ' + o.ad + '</span>' +
-            '<span class="sube">' + sube + '</span>' +
-          '</div>';
+          girmeyenHtml += '<div class="girmeyen-item"><span class="isim">👤 ' + o.ad + '</span><span class="sube">' + sube + '</span></div>';
         });
-        
         girmeyenHtml += '</div></div>';
         girmeyenlerAlan.innerHTML = girmeyenHtml;
       } else {
-        girmeyenlerAlan.innerHTML = '<div class="girmeyenler-bos">✅ Harika! Bu denemeye tüm öğrenciler girmiş (veya filtrelenen sınıfta girmeyen yok).</div>';
+        girmeyenlerAlan.innerHTML = '<div class="girmeyenler-bos">✅ Bu denemeye tüm öğrenciler girmiş.</div>';
       }
 
-      let liste = tumBuDenemeSonuclar
-        .map(function(s) {
-          const ogr = veri.ogrenciler.find(function(o) { return o.id === s.ogrenci_id; });
-          return Object.assign({}, s, { 
-            ogrenci_ad: ogr ? ogr.ad : 'Bilinmiyor', 
-            sinif: ogr ? (ogr.sinif || ogr.sube || '-') : '-',
-            sube: ogr ? (ogr.sube || '') : '',
-            numara: ogr ? ogr.numara : '',
-            alan: ogr ? ogr.alan : ''
-          });
+      let liste = tumBuDenemeSonuclar.map(function(s) {
+        const ogr = veri.ogrenciler.find(function(o) { return o.id === s.ogrenci_id; });
+        return Object.assign({}, s, {
+          ogrenci_ad: ogr ? ogr.ad : 'Bilinmiyor',
+          sinif: ogr ? (ogr.sinif || ogr.sube || '-') : '-',
+          sube: ogr ? (ogr.sube || '') : '',
+          numara: ogr ? ogr.numara : '',
+          alan: ogr ? ogr.alan : ''
         });
+      });
 
       if (seciliSinif) {
         liste = liste.filter(function(s) {
@@ -788,23 +751,17 @@
       }
 
       if (liste.length === 0) {
-        const mesajMetni = seciliSinif 
-          ? '⚠️ "' + seciliSinif + '" sınıfında bu denemeye ait sonuç bulunamadı. Lütfen farklı bir sınıf seçin veya "Tümü" seçeneğini kullanın.'
-          : 'Bu denemeye ait sonuç bulunamadı.';
-        sonucAlan.innerHTML = '<p class="bos-mesaj">' + mesajMetni + '</p>';
+        sonucAlan.innerHTML = '<p class="bos-mesaj">Bu denemeye ait sonuç bulunamadı.</p>';
         istatistikAlan.innerHTML = '';
         return;
       }
 
       let enCokArtiranId = null;
       let enCokArtisMiktari = 0;
-
       if (oncekiDeneme) {
         const oncekiSonuclarMap = {};
-        veri.sonuclar
-          .filter(function(s) { return s.deneme_id === oncekiDeneme.id; })
+        veri.sonuclar.filter(function(s) { return s.deneme_id === oncekiDeneme.id; })
           .forEach(function(s) { oncekiSonuclarMap[s.ogrenci_id] = parseFloat(s.toplam_net || 0); });
-
         liste.forEach(function(s) {
           if (oncekiSonuclarMap[s.ogrenci_id] !== undefined) {
             const fark = parseFloat(s.toplam_net || 0) - oncekiSonuclarMap[s.ogrenci_id];
@@ -823,50 +780,29 @@
       const enYuksek = liste[0].toplam_net;
       const enDusuk = liste[liste.length - 1].toplam_net;
 
-      istatistikAlan.innerHTML =
-        '<div class="istatistik">' +
-          '<div class="istatistik-kart"><div class="sayi">' + toplam + '</div><div class="etiket">' + (seciliSinif ? seciliSinif + ' Öğrenci' : 'Katılımcı') + '</div></div>' +
-          '<div class="istatistik-kart"><div class="sayi">' + ortalama + '</div><div class="etiket">Ortalama Net</div></div>' +
-          '<div class="istatistik-kart"><div class="sayi">' + enYuksek + ' / ' + enDusuk + '</div><div class="etiket">En Yüksek / En Düşük</div></div>' +
+      istatistikAlan.innerHTML = '<div class="istatistik">' +
+        '<div class="istatistik-kart"><div class="sayi">' + toplam + '</div><div class="etiket">' + (seciliSinif ? seciliSinif + ' Öğrenci' : 'Katılımcı') + '</div></div>' +
+        '<div class="istatistik-kart"><div class="sayi">' + ortalama + '</div><div class="etiket">Ortalama Net</div></div>' +
+        '<div class="istatistik-kart"><div class="sayi">' + enYuksek + ' / ' + enDusuk + '</div><div class="etiket">En Yüksek / En Düşük</div></div>' +
         '</div>';
 
+      let html = '';
       let artiranBilgi = '';
       if (oncekiDeneme && enCokArtiranId && enCokArtisMiktari > 0) {
         const artiranOgr = liste.find(function(s) { return s.ogrenci_id === enCokArtiranId; });
         if (artiranOgr) {
           artiranBilgi = '<div class="bilgi-kutu" style="background: #e0f2fe; border-left-color: #0369a1; color: #0c4a6e; margin-bottom: 15px;">' +
-            '🚀 <b>Bir önceki denemeye göre en çok net artıran:</b> ' + artiranOgr.ogrenci_ad + ' <b>(+' + enCokArtisMiktari.toFixed(2) + ' net)</b>' +
-            '<br><span style="font-size: 12px; opacity: 0.8;">Karşılaştırılan deneme: ' + oncekiDeneme.ad + ' (' + oncekiDeneme.tarih + ')</span>' +
-            '</div>';
+            '🚀 <b>En çok net artıran:</b> ' + artiranOgr.ogrenci_ad + ' <b>(+' + enCokArtisMiktari.toFixed(2) + ' net)</b></div>';
         }
-      } else if (!oncekiDeneme) {
-        artiranBilgi = '<div class="bilgi-kutu" style="background: #f8f9fa; border-left-color: #95a5a6; color: #666; margin-bottom: 15px;">' +
-          'ℹ️ Bu deneme için karşılaştırılacak bir önceki deneme bulunamadı.' +
-          '</div>';
       }
+      html = artiranBilgi;
 
-      if (seciliSinif) {
-        artiranBilgi = '<div class="bilgi-kutu" style="background: #fef3c7; border-left-color: #f59e0b; color: #92400e; margin-bottom: 15px;">' +
-          '🔍 <b>Sınıf Filtresi:</b> ' + seciliSinif + ' sınıfındaki öğrenciler gösteriliyor. ' +
-          '<span style="font-size: 12px; opacity: 0.8;">(Toplam ' + toplam + ' öğrenci)</span>' +
-          '</div>' + artiranBilgi;
-      }
-
-      let html = artiranBilgi;
-      
       html += '<div class="tablo-scroll"><table><thead><tr>' +
         '<th>Sıra</th><th>No</th><th>Öğrenci</th><th>Şube</th><th>Alan</th>' +
-        '<th class="turkce">Türkçe</th>' +
-        '<th class="sosyal">Tarih</th>' +
-        '<th class="sosyal">Coğrafya</th>' +
-        '<th class="sosyal">Felsefe</th>' +
-        '<th class="sosyal">Din K.</th>' +
-        '<th class="matematik">Matematik</th>' +
-        '<th class="matematik">Geometri</th>' +
-        '<th class="fen">Fizik</th>' +
-        '<th class="fen">Kimya</th>' +
-        '<th class="fen">Biyoloji</th>' +
-        '<th class="toplam">TOPLAM</th>' +
+        '<th class="turkce">Türkçe</th><th class="sosyal">Tarih</th><th class="sosyal">Coğrafya</th>' +
+        '<th class="sosyal">Felsefe</th><th class="sosyal">Din K.</th><th class="matematik">Matematik</th>' +
+        '<th class="matematik">Geometri</th><th class="fen">Fizik</th><th class="fen">Kimya</th>' +
+        '<th class="fen">Biyoloji</th><th class="toplam">TOPLAM</th>' +
         '</tr></thead><tbody>';
 
       liste.forEach(function(s, i) {
@@ -874,32 +810,25 @@
         if (i === 0) rozet = '<span class="rozet altin">🥇</span>';
         else if (i === 1) rozet = '<span class="rozet gumus">🥈</span>';
         else if (i === 2) rozet = '<span class="rozet bronz">🥉</span>';
-
         if (s.ogrenci_id === enCokArtiranId && enCokArtisMiktari > 0) {
-          rozet += ' <span class="rozet artiran" title="Bir önceki denemeye göre +' + enCokArtisMiktari.toFixed(2) + ' net artış">🚀 En Çok Artıran</span>';
+          rozet += ' <span class="rozet artiran">🚀</span>';
         }
-
-        html += '<tr>' +
-          '<td>' + rozet + ' ' + (i + 1) + '</td>' +
-          '<td>' + (s.numara || '-') + '</td>' +
-          '<td class="sol"><strong>' + s.ogrenci_ad + '</strong></td>' +
-          '<td>' + (s.sinif || '-') + '</td>' +
-          '<td>' + (s.alan || '-') + '</td>';
-
+        html += '<tr><td>' + rozet + ' ' + (i + 1) + '</td><td>' + (s.numara || '-') + '</td>' +
+          '<td class="sol"><strong>' + s.ogrenci_ad + '</strong></td><td>' + (s.sinif || '-') + '</td><td>' + (s.alan || '-') + '</td>';
         DERSLER.forEach(function(d) {
           html += '<td>' + parseFloat(s[d.key] || 0).toFixed(2) + '</td>';
         });
-
-        html += '<td><strong>' + parseFloat(s.toplam_net || 0).toFixed(2) + '</strong></td>' +
-          '</tr>';
+        html += '<td><strong>' + parseFloat(s.toplam_net || 0).toFixed(2) + '</strong></td></tr>';
       });
 
       html += '</tbody></table></div>';
       sonucAlan.innerHTML = html;
     }
 
+    // ═══════════════════════════════════════════════════════
+    // ÖĞRENCİLER, HEDEF, RAPOR
+    // ═══════════════════════════════════════════════════════
     function hedefSelectDoldur() {
-      veri = veriOku();
       const sel = document.getElementById('hedefOgrenci');
       if (!sel) return;
       sel.innerHTML = '<option value="">-- Öğrenci Seç --</option>';
@@ -919,26 +848,22 @@
       };
     }
 
-    function hedefKaydet() {
+    async function hedefKaydet() {
       const ogrenciId = parseInt(document.getElementById('hedefOgrenci').value);
       const hedef = parseFloat(document.getElementById('hedefNet').value);
-      
       if (!ogrenciId) return mesaj('Öğrenci seçin!', 'hata');
       if (!hedef || hedef <= 0) return mesaj('Geçerli bir hedef net girin!', 'hata');
-      
-      veri = veriOku();
+
       if (!veri.hedefler) veri.hedefler = {};
       veri.hedefler[ogrenciId] = hedef;
-      veriKaydet(veri);
-      
+      await veriKaydet(veri);
       mesaj('✅ Hedef net kaydedildi: ' + hedef);
     }
 
     function veliOgrencileriYukle() {
-      veri = veriOku();
       const sel = document.getElementById('veliOgrenciSec');
+      if (!sel) return;
       const secili = sel.value;
-      
       sel.innerHTML = '<option value="">-- Öğrenci Seçin --</option>';
       veri.ogrenciler.slice().sort(function(a, b) { return a.ad.localeCompare(b.ad, 'tr'); }).forEach(function(o) {
         const opt = document.createElement('option');
@@ -946,20 +871,14 @@
         opt.textContent = o.ad + (o.sinif ? ' (' + o.sinif + ')' : '');
         sel.appendChild(opt);
       });
-      
       if (secili) {
         sel.value = secili;
         veliGoster(parseInt(secili));
       }
     }
 
-    document.getElementById('veliOgrenciSec').addEventListener('change', function() {
-      veliGoster(parseInt(this.value));
-    });
-
     function veliGoster(ogrenciId) {
       const alan = document.getElementById('veliAlan');
-      
       if (!ogrenciId) {
         alan.innerHTML = '<p class="bos-mesaj">Veli bilgilendirmesi için öğrenci seçin.</p>';
         return;
@@ -971,8 +890,7 @@
         return;
       }
 
-      const tumSonuclar = veri.sonuclar
-        .filter(function(s) { return s.ogrenci_id === ogrenciId; })
+      const tumSonuclar = veri.sonuclar.filter(function(s) { return s.ogrenci_id === ogrenciId; })
         .map(function(s) {
           const d = veri.denemeler.find(function(x) { return x.id === s.deneme_id; });
           return Object.assign({}, s, { deneme_ad: d ? d.ad : '-', tarih: d ? d.tarih : '-' });
@@ -987,100 +905,65 @@
       const sonDeneme = tumSonuclar[tumSonuclar.length - 1];
       const oncekiDeneme = tumSonuclar.length > 1 ? tumSonuclar[tumSonuclar.length - 2] : null;
       const son3 = tumSonuclar.slice(-3).reverse();
-
       const hedef = (veri.hedefler && veri.hedefler[ogrenciId]) ? veri.hedefler[ogrenciId] : null;
       const sonNet = parseFloat(sonDeneme.toplam_net || 0);
       const kalan = hedef ? (hedef - sonNet) : null;
 
       let html = '';
-
       html += '<div class="veli-ogrenci-baslik">👤 ' + ogr.ad +
-        '<small>' + (ogr.sinif ? ogr.sinif : '-') + ' • ' + (ogr.alan ? ogr.alan : '-') + ' • Toplam ' + tumSonuclar.length + ' deneme</small>' +
-        '</div>';
+        '<small>' + (ogr.sinif ? ogr.sinif : '-') + ' • ' + (ogr.alan ? ogr.alan : '-') + ' • Toplam ' + tumSonuclar.length + ' deneme</small></div>';
 
       if (hedef) {
         const kalanRenk = kalan <= 0 ? '#27ae60' : '#ffd700';
-        const kalanYazi = kalan <= 0 
-          ? '🎉 HEDEFE ULAŞILDI!' 
-          : 'Hedefe kalan: ' + kalan.toFixed(2) + ' net';
-        
         html += '<div class="veli-hedef-kart">' +
           '<div class="veli-hedef-baslik">🎯 Hedef Bilgisi - ' + ogr.ad + '</div>' +
           '<div class="veli-hedef-grid">' +
-            '<div class="veli-hedef-item">' +
-              '<div class="sayi">' + hedef.toFixed(1) + '</div>' +
-              '<div class="etiket">HEDEF NET</div>' +
-            '</div>' +
-            '<div class="veli-hedef-item kalan">' +
-              '<div class="sayi" style="color: ' + kalanRenk + ';">' + (kalan > 0 ? kalan.toFixed(1) : '0') + '</div>' +
-              '<div class="etiket">' + (kalan > 0 ? 'HEDEFE KALAN NET' : 'HEDEF TAMAMLANDI') + '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div style="margin-top: 20px; font-size: 15px; font-weight: 600; color: ' + (kalan <= 0 ? '#27ae60' : '#ffd700') + ';">' + kalanYazi + '</div>' +
-        '</div>';
+            '<div class="veli-hedef-item"><div class="sayi">' + hedef.toFixed(1) + '</div><div class="etiket">HEDEF NET</div></div>' +
+            '<div class="veli-hedef-item kalan"><div class="sayi" style="color: ' + kalanRenk + ';">' + (kalan > 0 ? kalan.toFixed(1) : '0') + '</div>' +
+            '<div class="etiket">' + (kalan > 0 ? 'HEDEFE KALAN NET' : 'HEDEF TAMAMLANDI') + '</div></div>' +
+          '</div></div>';
       } else {
-        html += '<div class="veli-uyari-kart">⚠️ Bu öğrenci için hedef net belirlenmemiş. <br><b>Veri Ekle</b> sekmesinden hedef net belirleyebilirsiniz.</div>';
+        html += '<div class="veli-uyari-kart">⚠️ Bu öğrenci için hedef net belirlenmemiş.</div>';
       }
 
       html += '<div class="veli-deneme-kart son">' +
-        '<div class="veli-deneme-baslik">📝 SON GİRİLEN DENEME — ' + ogr.ad + ' • ' + sonDeneme.deneme_ad + '<span class="badge">SON</span></div>' +
-        '<div style="font-size: 13px; color: #666; margin-bottom: 15px;">📅 ' + sonDeneme.tarih + (oncekiDeneme ? ' • Karşılaştırma: <b>' + oncekiDeneme.deneme_ad + '</b>' : '') + '</div>';
-      
-      html += '<div class="veli-deneme-grid">';
+        '<div class="veli-deneme-baslik">📝 SON DENEME — ' + sonDeneme.deneme_ad + '<span class="badge">SON</span></div>' +
+        '<div style="font-size: 13px; color: #666; margin-bottom: 15px;">📅 ' + sonDeneme.tarih + '</div>' +
+        '<div class="veli-deneme-grid">';
+
       DERSLER.forEach(function(d) {
         const mevcut = parseFloat(sonDeneme[d.key] || 0);
         const onceki = oncekiDeneme ? parseFloat(oncekiDeneme[d.key] || 0) : null;
         let ok = '';
         if (onceki !== null) {
           const fark = mevcut - onceki;
-          if (fark > 0.001) ok = '<span class="ders-ok artis" title="+' + fark.toFixed(2) + '">▲</span>';
-          else if (fark < -0.001) ok = '<span class="ders-ok azalis" title="' + fark.toFixed(2) + '">▼</span>';
-          else ok = '<span class="ders-ok sabit" title="Değişim yok">—</span>';
+          if (fark > 0.001) ok = '<span class="ders-ok artis">▲</span>';
+          else if (fark < -0.001) ok = '<span class="ders-ok azalis">▼</span>';
+          else ok = '<span class="ders-ok sabit">—</span>';
         }
-        html += '<div class="veli-ders-kutu">' +
-          '<div class="ad">' + d.ad + '</div>' +
-          '<div class="net">' + mevcut.toFixed(2) + ok + '</div>' +
-        '</div>';
+        html += '<div class="veli-ders-kutu"><div class="ad">' + d.ad + '</div><div class="net">' + mevcut.toFixed(2) + ok + '</div></div>';
       });
-      
+
       const sonTop = parseFloat(sonDeneme.toplam_net || 0);
       const oncekiTop = oncekiDeneme ? parseFloat(oncekiDeneme.toplam_net || 0) : null;
       let okTop = '';
       if (oncekiTop !== null) {
         const farkTop = sonTop - oncekiTop;
-        if (farkTop > 0.001) okTop = '<span class="ders-ok artis" title="+' + farkTop.toFixed(2) + '">▲</span>';
-        else if (farkTop < -0.001) okTop = '<span class="ders-ok azalis" title="' + farkTop.toFixed(2) + '">▼</span>';
-        else okTop = '<span class="ders-ok sabit" title="Değişim yok">—</span>';
+        if (farkTop > 0.001) okTop = '<span class="ders-ok artis">▲</span>';
+        else if (farkTop < -0.001) okTop = '<span class="ders-ok azalis">▼</span>';
+        else okTop = '<span class="ders-ok sabit">—</span>';
       }
-      
-      html += '<div class="veli-ders-kutu toplam">' +
-        '<div class="ad">TOPLAM</div>' +
-        '<div class="net">' + sonTop.toFixed(2) + okTop + '</div>' +
-      '</div>';
-      html += '</div>';
-
-      if (hedef) {
-        if (sonNet >= hedef) {
-          html += '<div class="veli-iyi-kart" style="margin-top: 15px;">🎉 Tebrikler! Bu denemede hedef nete ulaşıldı (' + sonNet.toFixed(2) + ' / ' + hedef.toFixed(1) + ')</div>';
-        } else {
-          html += '<div class="veli-uyari-kart" style="margin-top: 15px;">📌 Bu denemede hedefe ' + kalan.toFixed(2) + ' net kaldı (' + sonNet.toFixed(2) + ' / ' + hedef.toFixed(1) + ')</div>';
-        }
-      }
-
-      html += '</div>';
+      html += '<div class="veli-ders-kutu toplam"><div class="ad">TOPLAM</div><div class="net">' + sonTop.toFixed(2) + okTop + '</div></div>';
+      html += '</div></div>';
 
       html += '<h2 style="margin-top: 30px; font-size: 18px;">📊 Son 3 Deneme</h2>';
-      
       son3.forEach(function(s, i) {
-        const badge = i === 0 ? '<span class="badge">SON</span>' : '<span class="badge eski">' + (i + 1) + '. SON</span>';
         const sIndex = tumSonuclar.indexOf(s);
         const sOnceki = sIndex > 0 ? tumSonuclar[sIndex - 1] : null;
-        
         html += '<div class="veli-deneme-kart' + (i === 0 ? ' son' : '') + '">' +
-          '<div class="veli-deneme-baslik">📝 ' + s.deneme_ad + badge + '</div>' +
-          '<div style="font-size: 13px; color: #666; margin-bottom: 15px;">📅 ' + s.tarih + '</div>';
-        
-        html += '<div class="veli-deneme-grid">';
+          '<div class="veli-deneme-baslik">📝 ' + s.deneme_ad + (i === 0 ? '<span class="badge">SON</span>' : '<span class="badge eski">' + (i+1) + '. SON</span>') + '</div>' +
+          '<div style="font-size: 13px; color: #666; margin-bottom: 15px;">📅 ' + s.tarih + '</div>' +
+          '<div class="veli-deneme-grid">';
         DERSLER.forEach(function(d) {
           const mevcut = parseFloat(s[d.key] || 0);
           const onceki = sOnceki ? parseFloat(sOnceki[d.key] || 0) : null;
@@ -1091,10 +974,7 @@
             else if (fark < -0.001) ok = '<span class="ders-ok azalis">▼</span>';
             else ok = '<span class="ders-ok sabit">—</span>';
           }
-          html += '<div class="veli-ders-kutu">' +
-            '<div class="ad">' + d.ad + '</div>' +
-            '<div class="net">' + mevcut.toFixed(2) + ok + '</div>' +
-          '</div>';
+          html += '<div class="veli-ders-kutu"><div class="ad">' + d.ad + '</div><div class="net">' + mevcut.toFixed(2) + ok + '</div></div>';
         });
         const top = parseFloat(s.toplam_net || 0);
         const topOnceki = sOnceki ? parseFloat(sOnceki.toplam_net || 0) : null;
@@ -1105,20 +985,7 @@
           else if (farkTop < -0.001) okTop = '<span class="ders-ok azalis">▼</span>';
           else okTop = '<span class="ders-ok sabit">—</span>';
         }
-        html += '<div class="veli-ders-kutu toplam">' +
-          '<div class="ad">TOPLAM</div>' +
-          '<div class="net">' + top.toFixed(2) + okTop + '</div>' +
-        '</div>';
-        html += '</div>';
-        
-        if (hedef) {
-          const buNet = parseFloat(s.toplam_net || 0);
-          if (buNet >= hedef) {
-            html += '<div style="margin-top: 12px; font-size: 13px; color: #27ae60; font-weight: 600;">✅ Bu denemede hedefe ulaşıldı</div>';
-          }
-        }
-        
-        html += '</div>';
+        html += '<div class="veli-ders-kutu toplam"><div class="ad">TOPLAM</div><div class="net">' + top.toFixed(2) + okTop + '</div></div></div></div>';
       });
 
       alan.innerHTML = html;
@@ -1126,294 +993,151 @@
 
     function karneYazdir() {
       const ogrenciId = parseInt(document.getElementById('veliOgrenciSec').value);
-      if (!ogrenciId) {
-        return mesaj('Lütfen önce bir öğrenci seçin!', 'hata');
-      }
+      if (!ogrenciId) return mesaj('Lütfen önce bir öğrenci seçin!', 'hata');
 
       const ogr = veri.ogrenciler.find(function(o) { return o.id === ogrenciId; });
       if (!ogr) return mesaj('Öğrenci bulunamadı!', 'hata');
 
-      const tumSonuclar = veri.sonuclar
-        .filter(function(s) { return s.ogrenci_id === ogrenciId; })
+      const tumSonuclar = veri.sonuclar.filter(function(s) { return s.ogrenci_id === ogrenciId; })
         .map(function(s) {
           const d = veri.denemeler.find(function(x) { return x.id === s.deneme_id; });
           return Object.assign({}, s, { deneme_ad: d ? d.ad : '-', tarih: d ? d.tarih : '-' });
         })
         .sort(function(a, b) { return a.tarih.localeCompare(b.tarih); });
 
-      if (tumSonuclar.length === 0) {
-        return mesaj('Bu öğrenciye ait sonuç bulunamadı!', 'hata');
-      }
+      if (tumSonuclar.length === 0) return mesaj('Bu öğrenciye ait sonuç bulunamadı!', 'hata');
 
       const hedef = (veri.hedefler && veri.hedefler[ogrenciId]) ? veri.hedefler[ogrenciId] : null;
       const sonDeneme = tumSonuclar[tumSonuclar.length - 1];
       const oncekiDeneme = tumSonuclar.length > 1 ? tumSonuclar[tumSonuclar.length - 2] : null;
 
       const karnePencere = window.open('', '_blank', 'width=1100,height=900,scrollbars=yes');
-
-      let html = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">' +
-        '<title>Karne - ' + ogr.ad + '</title>' +
-        '<style>' +
-        '* { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", Tahoma, sans-serif; }' +
-        'body { background: #f8fafc; padding: 30px; color: #2c3e50; }' +
-        '.karne { max-width: 1000px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }' +
-        '.karne-baslik { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 35px 40px; text-align: center; }' +
-        '.karne-baslik h1 { font-size: 22px; margin-bottom: 5px; letter-spacing: 1px; }' +
-        '.karne-baslik .ogrenci-adi { font-size: 32px; font-weight: 900; margin: 12px 0 8px; letter-spacing: 1px; text-shadow: 0 3px 12px rgba(0,0,0,0.3); }' +
-        '.karne-baslik .alt { font-size: 13px; opacity: 0.9; }' +
-        '.karne-icerik { padding: 30px 40px; }' +
-        '.ozet-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }' +
-        '.ozet-kutu { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 20px; border-radius: 12px; text-align: center; position: relative; }' +
-        '.ozet-kutu .sayi { font-size: 26px; font-weight: 800; }' +
-        '.ozet-kutu .etiket { font-size: 12px; opacity: 0.9; margin-top: 5px; }' +
-        '.ozet-kutu.yesil { background: linear-gradient(135deg, #27ae60, #16a34a); }' +
-        '.ozet-kutu.kirmizi { background: linear-gradient(135deg, #e74c3c, #c0392b); }' +
-        '.ozet-kutu.turuncu { background: linear-gradient(135deg, #f39c12, #e67e22); }' +
-        'table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }' +
-        'th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #eee; }' +
-        'th { background: #2c3e50; color: #fff; font-size: 11px; text-transform: uppercase; }' +
-        'th.turkce { background: #e74c3c; }' +
-        'th.sosyal { background: #f39c12; }' +
-        'th.matematik { background: #3498db; }' +
-        'th.fen { background: #27ae60; }' +
-        'th.toplam { background: #8e44ad; }' +
-        'tr:nth-child(even) { background: #f8f9fa; }' +
-        'tr.son-deneme { background: linear-gradient(90deg, #d1fae5, #ecfdf5) !important; border-left: 4px solid #27ae60; }' +
-        'tr.son-deneme td { font-weight: 700; color: #065f46; }' +
-        'tr.son-deneme td.sol { color: #065f46; }' +
-        'td.sol { text-align: left; }' +
-        'td .hucre { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }' +
-        '.ok { font-size: 12px; font-weight: 900; line-height: 1; }' +
-        '.ok.artis { color: #27ae60; }' +
-        '.ok.azalis { color: #e74c3c; }' +
-        '.ok.sabit { color: #95a5a6; font-size: 13px; }' +
-        '.fark { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 6px; }' +
-        '.fark.artis { background: #d1fae5; color: #065f46; }' +
-        '.fark.azalis { background: #fee2e2; color: #991b1b; }' +
-        '.fark.sabit { background: #f1f5f9; color: #64748b; }' +
-        '.karsilastirma-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }' +
-        '.kars-kutu { padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }' +
-        '.kars-kutu .ad { font-size: 13px; font-weight: 600; }' +
-        '.kars-kutu .fark { font-size: 14px; font-weight: 700; }' +
-        '.karne-alt { padding: 20px 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }' +
-        '.hedef-kutu { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px 20px; border-radius: 8px; margin-bottom: 25px; font-size: 14px; }' +
-        '.hedef-kutu strong { color: #1e40af; }' +
-        '.aciklama { font-size: 12px; color: #666; margin: 15px 0; padding: 10px 14px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #667eea; }' +
-        '.aciklama .ok { margin: 0 3px; }' +
-        '@media print { body { background: #fff; padding: 0; } .karne { box-shadow: none; border-radius: 0; } .yazdir-buton { display: none; } }' +
-        '.yazdir-buton { position: fixed; bottom: 20px; right: 20px; padding: 14px 28px; background: #27ae60; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(39,174,96,0.3); }' +
-        '</style></head><body>';
-
-      html += '<div class="karne">';
-      
-      html += '<div class="karne-baslik">' +
-        '<h1>📊 ÖĞRENCİ KARNESİ</h1>' +
-        '<div class="ogrenci-adi">' + ogr.ad + '</div>' +
-        '<div class="alt">Deneme Bilgileri Sistemi - Bireysel Gelişim Raporu</div>' +
-        '</div>';
-
+      const sonNet = parseFloat(sonDeneme.toplam_net || 0);
       const netler = tumSonuclar.map(function(r) { return parseFloat(r.toplam_net || 0); });
       const ortalama = netler.reduce(function(s, v) { return s + v; }, 0) / netler.length;
       const enIyi = Math.max.apply(null, netler);
       const enKotu = Math.min.apply(null, netler);
 
-      const sonNet = parseFloat(sonDeneme.toplam_net || 0);
+      let html = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>Karne - ' + ogr.ad + '</title>' +
+        '<style>* { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", Tahoma, sans-serif; }' +
+        'body { background: #f8fafc; padding: 30px; color: #2c3e50; }' +
+        '.karne { max-width: 1000px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }' +
+        '.karne-baslik { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 35px 40px; text-align: center; }' +
+        '.karne-baslik h1 { font-size: 22px; margin-bottom: 5px; }' +
+        '.karne-baslik .ogrenci-adi { font-size: 32px; font-weight: 900; margin: 12px 0 8px; }' +
+        '.karne-baslik .alt { font-size: 13px; opacity: 0.9; }' +
+        '.karne-icerik { padding: 30px 40px; }' +
+        '.ozet-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 25px 0; }' +
+        '.ozet-kutu { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 20px; border-radius: 12px; text-align: center; }' +
+        '.ozet-kutu.yesil { background: linear-gradient(135deg, #27ae60, #16a34a); }' +
+        '.ozet-kutu.kirmizi { background: linear-gradient(135deg, #e74c3c, #c0392b); }' +
+        '.ozet-kutu .sayi { font-size: 26px; font-weight: 800; }' +
+        '.ozet-kutu .etiket { font-size: 12px; opacity: 0.9; margin-top: 5px; }' +
+        'table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }' +
+        'th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #eee; }' +
+        'th { background: #2c3e50; color: #fff; font-size: 11px; text-transform: uppercase; }' +
+        'td.sol { text-align: left; }' +
+        '.hedef-kutu { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px 20px; border-radius: 8px; margin-bottom: 25px; font-size: 14px; }' +
+        '.karne-alt { padding: 20px 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }' +
+        '@media print { body { background: #fff; padding: 0; } .karne { box-shadow: none; border-radius: 0; } .yazdir-buton { display: none; } }' +
+        '.yazdir-buton { position: fixed; bottom: 20px; right: 20px; padding: 14px 28px; background: #27ae60; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }' +
+        '</style></head><body>';
 
+      html += '<div class="karne">';
+      html += '<div class="karne-baslik"><h1>📊 ÖĞRENCİ KARNESİ</h1><div class="ogrenci-adi">' + ogr.ad + '</div><div class="alt">Deneme Bilgileri Sistemi</div></div>';
       html += '<div class="karne-icerik">';
-
-      // ⛔ TREND BANNER KALDIRILDI — üstteki "Son denemede net artışı/düşüşü" kutusu artık gösterilmiyor.
 
       if (hedef) {
         const kalan = hedef - sonNet;
-        html += '<div class="hedef-kutu">' +
-          '🎯 <strong>Hedef Net:</strong> ' + hedef.toFixed(1) + ' | ' +
-          '<strong>Son Deneme Net:</strong> ' + sonNet.toFixed(1) + ' | ' +
-          (kalan <= 0 
-            ? '<span style="color: #27ae60; font-weight: 700;">✅ HEDEFE ULAŞILDI!</span>'
-            : '<span style="color: #e67e22; font-weight: 700;">Kalan: ' + kalan.toFixed(1) + ' net</span>') +
-          '</div>';
+        html += '<div class="hedef-kutu">🎯 <strong>Hedef:</strong> ' + hedef.toFixed(1) + ' | <strong>Son Net:</strong> ' + sonNet.toFixed(1) + ' | ' +
+          (kalan <= 0 ? '<span style="color:#27ae60;font-weight:700;">✅ HEDEFE ULAŞILDI!</span>' : '<span style="color:#e67e22;font-weight:700;">Kalan: ' + kalan.toFixed(1) + '</span>') + '</div>';
       }
 
-      html += '<div class="aciklama">' +
-        '📌 <b>Değişim göstergeleri:</b> ' +
-        '<span class="ok artis">▲</span> artış &nbsp;|&nbsp; ' +
-        '<span class="ok azalis">▼</span> düşüş &nbsp;|&nbsp; ' +
-        '<span class="ok sabit">—</span> değişim yok ' +
-        '(her satırdaki değer <b>bir önceki denemeye</b> göre karşılaştırılır)' +
-        '</div>';
-
-      html += '<h3 style="margin: 20px 0 10px; font-size: 16px;">📋 Deneme Sonuçları (Değişim Oklu - En Son Deneme En Üstte)</h3>';
+      html += '<h3 style="margin: 20px 0 10px; font-size: 16px;">📋 Deneme Sonuçları</h3>';
       html += '<table><thead><tr><th>Deneme</th><th>Tarih</th>';
-      DERSLER.forEach(function(d) {
-        var cls = '';
-        if (['turkce_net'].includes(d.key)) cls = 'turkce';
-        else if (['tarih_net','cografya_net','felsefe_net','din_net'].includes(d.key)) cls = 'sosyal';
-        else if (['matematik_net','geometri_net'].includes(d.key)) cls = 'matematik';
-        else if (['fizik_net','kimya_net','biyoloji_net'].includes(d.key)) cls = 'fen';
-        html += '<th class="' + cls + '">' + d.ad + '</th>';
-      });
-      html += '<th class="toplam">TOPLAM</th></tr></thead><tbody>';
+      DERSLER.forEach(function(d) { html += '<th>' + d.ad + '</th>'; });
+      html += '<th>TOPLAM</th></tr></thead><tbody>';
 
-      tumSonuclar.slice().reverse().forEach(function(s, tersIndex) {
-        const orijinalIndex = tumSonuclar.length - 1 - tersIndex;
-        const sonSatirMi = (tersIndex === 0);
-
-        html += '<tr' + (sonSatirMi ? ' class="son-deneme"' : '') + '>' +
-          '<td class="sol">' + (sonSatirMi ? '🟢 ' : '') + s.deneme_ad + '</td>' +
-          '<td>' + s.tarih + '</td>';
-
+      tumSonuclar.slice().reverse().forEach(function(s, i) {
+        html += '<tr><td class="sol">' + s.deneme_ad + '</td><td>' + s.tarih + '</td>';
         DERSLER.forEach(function(d) {
-          const mevcut = parseFloat(s[d.key] || 0);
-          const onceki = orijinalIndex > 0 ? parseFloat(tumSonuclar[orijinalIndex - 1][d.key] || 0) : null;
-          
-          let ok = '';
-          if (onceki !== null) {
-            const fark = mevcut - onceki;
-            if (fark > 0.001) ok = '<span class="ok artis" title="+' + fark.toFixed(2) + '">▲</span>';
-            else if (fark < -0.001) ok = '<span class="ok azalis" title="' + fark.toFixed(2) + '">▼</span>';
-            else ok = '<span class="ok sabit" title="Değişim yok">—</span>';
-          }
-
-          html += '<td><span class="hucre">' + mevcut.toFixed(2) + ok + '</span></td>';
+          html += '<td>' + parseFloat(s[d.key] || 0).toFixed(2) + '</td>';
         });
-
-        const mevcutTop = parseFloat(s.toplam_net || 0);
-        const oncekiTop = orijinalIndex > 0 ? parseFloat(tumSonuclar[orijinalIndex - 1].toplam_net || 0) : null;
-        let okTop = '';
-        let farkTopHTML = '';
-        if (oncekiTop !== null) {
-          const farkTop = mevcutTop - oncekiTop;
-          if (farkTop > 0.001) { okTop = '<span class="ok artis">▲</span>'; farkTopHTML = '<span class="fark artis">+' + farkTop.toFixed(1) + '</span>'; }
-          else if (farkTop < -0.001) { okTop = '<span class="ok azalis">▼</span>'; farkTopHTML = '<span class="fark azalis">' + farkTop.toFixed(1) + '</span>'; }
-          else { okTop = '<span class="ok sabit">—</span>'; farkTopHTML = '<span class="fark sabit">0</span>'; }
-        }
-
-        html += '<td><span class="hucre"><strong>' + mevcutTop.toFixed(2) + '</strong>' + okTop + farkTopHTML + '</span></td></tr>';
+        html += '<td><strong>' + parseFloat(s.toplam_net || 0).toFixed(2) + '</strong></td></tr>';
       });
 
       html += '</tbody></table>';
 
-      if (oncekiDeneme) {
-        html += '<h3 style="margin: 30px 0 10px; font-size: 16px;">📊 Son Deneme Karşılaştırması (' + sonDeneme.deneme_ad + ' ↔ ' + oncekiDeneme.deneme_ad + ')</h3>';
-        html += '<div class="karsilastirma-grid">';
-
-        DERSLER.forEach(function(d) {
-          const mevcut = parseFloat(sonDeneme[d.key] || 0);
-          const onceki = parseFloat(oncekiDeneme[d.key] || 0);
-          const fark = mevcut - onceki;
-
-          let bg, ok, farkYazi;
-          if (fark > 0.001) { bg = '#d1fae5'; ok = '▲'; farkYazi = '+' + fark.toFixed(1); }
-          else if (fark < -0.001) { bg = '#fee2e2'; ok = '▼'; farkYazi = fark.toFixed(1); }
-          else { bg = '#f1f5f9'; ok = '—'; farkYazi = '0'; }
-
-          html += '<div class="kars-kutu" style="background: ' + bg + ';">' +
-            '<span class="ad">' + d.ad + '</span>' +
-            '<span class="fark">' + farkYazi + ' ' + ok + '</span>' +
-          '</div>';
-        });
-
-        html += '</div>';
-      }
-
-      html += '<div class="ozet-grid" style="margin-top: 40px;">' +
+      html += '<div class="ozet-grid">' +
         '<div class="ozet-kutu"><div class="sayi">' + tumSonuclar.length + '</div><div class="etiket">Deneme Sayısı</div></div>' +
         '<div class="ozet-kutu"><div class="sayi">' + ortalama.toFixed(1) + '</div><div class="etiket">Ortalama Net</div></div>' +
-        '<div class="ozet-kutu yesil"><div class="sayi">' + enIyi.toFixed(1) + '</div><div class="etiket">En Yüksek Net</div></div>' +
-        '<div class="ozet-kutu kirmizi"><div class="sayi">' + enKotu.toFixed(1) + '</div><div class="etiket">En Düşük Net</div></div>' +
+        '<div class="ozet-kutu yesil"><div class="sayi">' + enIyi.toFixed(1) + '</div><div class="etiket">En Yüksek</div></div>' +
+        '<div class="ozet-kutu kirmizi"><div class="sayi">' + enKotu.toFixed(1) + '</div><div class="etiket">En Düşük</div></div>' +
         '</div>';
 
+      html += '</div><div class="karne-alt">Bu karne otomatik oluşturulmuştur. | ' + new Date().toLocaleDateString('tr-TR') + '</div>';
       html += '</div>';
-      html += '<div class="karne-alt">Bu karne Deneme Bilgileri Sistemi tarafından otomatik oluşturulmuştur. | ' + new Date().toLocaleDateString('tr-TR') + '</div>';
-      html += '</div>';
-
-      html += '<button class="yazdir-buton" onclick="window.print()">🖨️ Yazdır / PDF Kaydet</button>';
+      html += '<button class="yazdir-buton" onclick="window.print()">🖨️ Yazdır / PDF</button>';
       html += '</body></html>';
 
       karnePencere.document.write(html);
       karnePencere.document.close();
     }
 
+    // ═══════════════════════════════════════════════════════
+    // DENEME LİSTESİ
+    // ═══════════════════════════════════════════════════════
     function denemeListesiGoster() {
-      veri = veriOku();
       const alan = document.getElementById('denemeListeAlan');
-
       if (veri.denemeler.length === 0) {
         alan.innerHTML = '<p class="bos-mesaj">Henüz deneme eklenmemiş.</p>';
         return;
       }
-
       let html = '';
       veri.denemeler.slice().reverse().forEach(function(d) {
         const sonucSayisi = veri.sonuclar.filter(function(s) { return s.deneme_id === d.id; }).length;
         html += '<div class="deneme-liste-item">' +
-          '<div class="bilgi">' +
-            '<div class="ad">📝 ' + d.ad + '</div>' +
-            '<div class="detay">📅 ' + d.tarih + ' • ' + sonucSayisi + ' öğrenci sonucu</div>' +
-          '</div>' +
+          '<div class="bilgi"><div class="ad">📝 ' + d.ad + '</div>' +
+          '<div class="detay">📅 ' + d.tarih + ' • ' + sonucSayisi + ' sonuç</div></div>' +
           '<button class="btn kirmizi kucuk" onclick="denemeSil(' + d.id + ', \'' + d.ad.replace(/'/g, "\\'") + '\')">🗑️ Sil</button>' +
         '</div>';
       });
-
       alan.innerHTML = html;
     }
 
-    function denemeSil(denemeId, denemeAd) {
-      if (!confirm('⚠️ "' + denemeAd + '" denemesi silinecek!\n\nBu denemeye ait TÜM öğrenci sonuçları da silinecek.\n\nEmin misiniz?')) return;
-      
-      veri = veriOku();
+    async function denemeSil(denemeId, denemeAd) {
+      if (!confirm('⚠️ "' + denemeAd + '" denemesi ve tüm sonuçları silinecek. Emin misiniz?')) return;
       veri.denemeler = veri.denemeler.filter(function(d) { return d.id !== denemeId; });
       veri.sonuclar = veri.sonuclar.filter(function(s) { return s.deneme_id !== denemeId; });
-      veriKaydet(veri);
-      
-      mesaj('🗑️ "' + denemeAd + '" denemesi silindi');
+      await veriKaydet(veri);
+      mesaj('🗑️ "' + denemeAd + '" silindi');
       denemeListesiGoster();
       denemeleriYukle();
       veriIstatistikGoster();
     }
 
-    const excelZone = document.getElementById('excelZone');
-    const excelFile = document.getElementById('excelFile');
-    const dosyaBilgi = document.getElementById('dosyaBilgi');
-    const onizlemeAlan = document.getElementById('onizlemeAlan');
-    const yukleButonAlan = document.getElementById('yukleButonAlan');
-
-    excelZone.addEventListener('click', function() { excelFile.click(); });
-    excelZone.addEventListener('dragover', function(e) { e.preventDefault(); excelZone.classList.add('dragover'); });
-    excelZone.addEventListener('dragleave', function() { excelZone.classList.remove('dragover'); });
-    excelZone.addEventListener('drop', function(e) {
-      e.preventDefault();
-      excelZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) excelDosyaIsle(e.dataTransfer.files[0]);
-    });
-    excelFile.addEventListener('change', function(e) {
-      if (e.target.files.length > 0) excelDosyaIsle(e.target.files[0]);
-    });
-
+    // ═══════════════════════════════════════════════════════
+    // EXCEL YÜKLEME
+    // ═══════════════════════════════════════════════════════
     function excelDosyaIsle(file) {
-      dosyaBilgi.innerHTML = '<div class="yukleme-mesaji" style="background: #eff6ff;">⏳ <b>' + file.name + '</b> okunuyor...</div>';
-      
+      document.getElementById('dosyaBilgi').innerHTML = '<div class="yukleme-mesaji" style="background: #eff6ff;">⏳ <b>' + file.name + '</b> okunuyor...</div>';
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
-          
           let sayfaAdi = workbook.SheetNames[0];
           if (workbook.SheetNames.indexOf('TYT') !== -1) sayfaAdi = 'TYT';
-          
           const sayfa = workbook.Sheets[sayfaAdi];
           const satirlar = XLSX.utils.sheet_to_json(sayfa, { header: 1, defval: '' });
-          
+
           let ogrenciler = [];
           let basladi = false;
-          
+
           for (let i = 0; i < satirlar.length; i++) {
             const satir = satirlar[i];
             const ilkHucre = String(satir[NO_SUTUN] || '').trim();
-            
             if (ilkHucre === 'NO' || ilkHucre === 'No') { basladi = true; continue; }
-            
             if (basladi && ilkHucre && !isNaN(parseInt(ilkHucre))) {
               const ogr = {
                 no: parseInt(ilkHucre),
@@ -1436,70 +1160,49 @@
               if (ogr.ad) ogrenciler.push(ogr);
             }
           }
-          
+
           if (ogrenciler.length === 0) {
-            dosyaBilgi.innerHTML = '<div class="yukleme-mesaji" style="background: #fee2e2; color: #991b1b;">❌ Veri bulunamadı.</div>';
+            document.getElementById('dosyaBilgi').innerHTML = '<div class="yukleme-mesaji" style="background: #fee2e2; color: #991b1b;">❌ Veri bulunamadı.</div>';
             return;
           }
-          
+
           excelVerisi = ogrenciler;
-          
-          dosyaBilgi.innerHTML = '<div class="yukleme-mesaji" style="background: #dcfce7; color: #166534;">✅ <b>' + ogrenciler.length + '</b> öğrenci bulundu.</div>';
-          
+          document.getElementById('dosyaBilgi').innerHTML = '<div class="yukleme-mesaji" style="background: #dcfce7; color: #166534;">✅ <b>' + ogrenciler.length + '</b> öğrenci bulundu.</div>';
           onizlemeGoster(ogrenciler);
-          yukleButonAlan.innerHTML = '<button class="btn yesil" onclick="excelYukle()" style="width: 100%; padding: 14px; font-size: 16px;">📥 Excel\'i Sisteme Yükle (' + ogrenciler.length + ' öğrenci)</button>';
+          document.getElementById('yukleButonAlan').innerHTML = '<button class="btn yesil" onclick="excelYukle()" style="width: 100%; padding: 14px; font-size: 16px;">📥 Excel\'i Sisteme Yükle (' + ogrenciler.length + ' öğrenci)</button>';
         } catch (err) {
-          dosyaBilgi.innerHTML = '<div class="yukleme-mesaji" style="background: #fee2e2; color: #991b1b;">❌ Hata: ' + err.message + '</div>';
+          document.getElementById('dosyaBilgi').innerHTML = '<div class="yukleme-mesaji" style="background: #fee2e2; color: #991b1b;">❌ Hata: ' + err.message + '</div>';
         }
       };
       reader.readAsArrayBuffer(file);
     }
 
     function onizlemeGoster(ogrenciler) {
-      let html = '<div class="onizleme"><table><thead><tr>' +
-        '<th>No</th><th>Ad Soyad</th><th>Şube</th><th>Alan</th>';
-      
-      DERSLER.forEach(function(d) {
-        html += '<th>' + d.ad + '</th>';
-      });
-      
+      let html = '<div class="onizleme"><table><thead><tr><th>No</th><th>Ad Soyad</th><th>Şube</th><th>Alan</th>';
+      DERSLER.forEach(function(d) { html += '<th>' + d.ad + '</th>'; });
       html += '<th class="toplam">TOPLAM</th></tr></thead><tbody>';
-      
       ogrenciler.forEach(function(o) {
-        html += '<tr>' +
-          '<td>' + o.no + '</td>' +
-          '<td class="sol"><strong>' + o.ad + '</strong></td>' +
-          '<td>' + o.sube + '</td>' +
-          '<td>' + o.alan + '</td>';
-        
+        html += '<tr><td>' + o.no + '</td><td class="sol"><strong>' + o.ad + '</strong></td><td>' + o.sube + '</td><td>' + o.alan + '</td>';
         DERSLER.forEach(function(d) {
           html += '<td>' + parseFloat(o[d.key] || 0).toFixed(2) + '</td>';
         });
-        
-        html += '<td><strong>' + parseFloat(o.toplam_net || 0).toFixed(2) + '</strong></td>' +
-          '</tr>';
+        html += '<td><strong>' + parseFloat(o.toplam_net || 0).toFixed(2) + '</strong></td></tr>';
       });
-      
       html += '</tbody></table></div>';
-      onizlemeAlan.innerHTML = html;
+      document.getElementById('onizlemeAlan').innerHTML = html;
     }
 
-    function excelYukle() {
+    async function excelYukle() {
       const denemeAd = document.getElementById('excelDenemeAd').value.trim();
       const denemeTarih = document.getElementById('excelDenemeTarih').value;
-      
       if (!denemeAd || !denemeTarih) return mesaj('Lütfen deneme adı ve tarihini girin!', 'hata');
       if (!excelVerisi || excelVerisi.length === 0) return mesaj('Önce Excel dosyası yükleyin!', 'hata');
-      
-      const denemeId = veri.denemeler.length > 0 
-        ? Math.max.apply(null, veri.denemeler.map(function(d) { return d.id; })) + 1 
-        : 1;
-      
+
+      const denemeId = veri.denemeler.length > 0 ? Math.max.apply(null, veri.denemeler.map(function(d) { return d.id; })) + 1 : 1;
       veri.denemeler.push({ id: denemeId, ad: denemeAd, tarih: denemeTarih });
-      
+
       excelVerisi.forEach(function(o) {
         let mevcutOgr = veri.ogrenciler.find(function(x) { return x.ad === o.ad; });
-        
         let ogrenciId;
         if (mevcutOgr) {
           ogrenciId = mevcutOgr.id;
@@ -1508,70 +1211,54 @@
           mevcutOgr.numara = o.numara;
           mevcutOgr.alan = o.alan;
         } else {
-          ogrenciId = veri.ogrenciler.length > 0 
-            ? Math.max.apply(null, veri.ogrenciler.map(function(x) { return x.id; })) + 1 
-            : 1;
-          veri.ogrenciler.push({
-            id: ogrenciId, ad: o.ad, sinif: o.sube, sube: o.sube, numara: o.numara, alan: o.alan
-          });
+          ogrenciId = veri.ogrenciler.length > 0 ? Math.max.apply(null, veri.ogrenciler.map(function(x) { return x.id; })) + 1 : 1;
+          veri.ogrenciler.push({ id: ogrenciId, ad: o.ad, sinif: o.sube, sube: o.sube, numara: o.numara, alan: o.alan });
         }
-        
         veri.sonuclar.push({
-          deneme_id: denemeId,
-          ogrenci_id: ogrenciId,
-          turkce_net: o.turkce_net,
-          tarih_net: o.tarih_net,
-          cografya_net: o.cografya_net,
-          felsefe_net: o.felsefe_net,
-          din_net: o.din_net,
-          matematik_net: o.matematik_net,
-          geometri_net: o.geometri_net,
-          fizik_net: o.fizik_net,
-          kimya_net: o.kimya_net,
-          biyoloji_net: o.biyoloji_net,
-          toplam_net: o.toplam_net
+          deneme_id: denemeId, ogrenci_id: ogrenciId,
+          turkce_net: o.turkce_net, tarih_net: o.tarih_net, cografya_net: o.cografya_net,
+          felsefe_net: o.felsefe_net, din_net: o.din_net, matematik_net: o.matematik_net,
+          geometri_net: o.geometri_net, fizik_net: o.fizik_net, kimya_net: o.kimya_net,
+          biyoloji_net: o.biyoloji_net, toplam_net: o.toplam_net
         });
       });
-      
-      veriKaydet(veri);
-      
+
+      await veriKaydet(veri);
       mesaj('✅ ' + excelVerisi.length + ' öğrenci yüklendi!');
-      
+
       document.getElementById('excelDenemeAd').value = '';
       document.getElementById('excelDenemeTarih').value = '';
       excelVerisi = null;
-      dosyaBilgi.innerHTML = '';
-      onizlemeAlan.innerHTML = '';
-      yukleButonAlan.innerHTML = '';
-      excelFile.value = '';
-      
+      document.getElementById('dosyaBilgi').innerHTML = '';
+      document.getElementById('onizlemeAlan').innerHTML = '';
+      document.getElementById('yukleButonAlan').innerHTML = '';
+      document.getElementById('excelFile').value = '';
       sinifFiltreDoldur();
       sekmeAc('ana');
     }
 
-    function denemeEkle() {
+    // ═══════════════════════════════════════════════════════
+    // MANUEL EKLEME
+    // ═══════════════════════════════════════════════════════
+    async function denemeEkle() {
       const ad = document.getElementById('denemeAd').value.trim();
       const tarih = document.getElementById('denemeTarih').value;
       if (!ad || !tarih) return mesaj('Lütfen tüm alanları doldurun', 'hata');
-
-      veri = veriOku();
       const yeniId = veri.denemeler.length > 0 ? Math.max.apply(null, veri.denemeler.map(function(d) { return d.id; })) + 1 : 1;
       veri.denemeler.push({ id: yeniId, ad: ad, tarih: tarih });
-      veriKaydet(veri);
+      await veriKaydet(veri);
       mesaj('✅ Deneme eklendi');
       document.getElementById('denemeAd').value = '';
       document.getElementById('denemeTarih').value = '';
     }
 
-    function ogrenciEkle() {
+    async function ogrenciEkle() {
       const ad = document.getElementById('ogrenciAd').value.trim();
       const sinif = document.getElementById('ogrenciSinif').value.trim();
       if (!ad) return mesaj('Öğrenci adı gerekli', 'hata');
-
-      veri = veriOku();
       const yeniId = veri.ogrenciler.length > 0 ? Math.max.apply(null, veri.ogrenciler.map(function(o) { return o.id; })) + 1 : 1;
       veri.ogrenciler.push({ id: yeniId, ad: ad, sinif: sinif, sube: sinif });
-      veriKaydet(veri);
+      await veriKaydet(veri);
       mesaj('✅ Öğrenci eklendi');
       document.getElementById('ogrenciAd').value = '';
       document.getElementById('ogrenciSinif').value = '';
@@ -1579,24 +1266,22 @@
       sinifFiltreDoldur();
     }
 
+    // ═══════════════════════════════════════════════════════
+    // ÖĞRENCİ LİSTESİ & RAPOR
+    // ═══════════════════════════════════════════════════════
     function ogrenciListesiGoster() {
-      veri = veriOku();
       const alan = document.getElementById('ogrenciListeAlan');
       if (!alan) return;
-      
       if (veri.ogrenciler.length === 0) {
         alan.innerHTML = '<p class="bos-mesaj">Henüz öğrenci eklenmemiş.</p>';
         return;
       }
-      
       let html = '<div style="max-height: 400px; overflow-y: auto;">';
       veri.ogrenciler.slice().sort(function(a, b) { return a.ad.localeCompare(b.ad, 'tr'); }).forEach(function(o) {
         const sonucSayisi = veri.sonuclar.filter(function(s) { return s.ogrenci_id === o.id; }).length;
         html += '<div class="deneme-liste-item">' +
-          '<div class="bilgi">' +
-            '<div class="ad">👤 ' + o.ad + '</div>' +
-            '<div class="detay">Sınıf: ' + (o.sinif || o.sube || '-') + ' • ' + sonucSayisi + ' sonuç</div>' +
-          '</div>' +
+          '<div class="bilgi"><div class="ad">👤 ' + o.ad + '</div>' +
+          '<div class="detay">Sınıf: ' + (o.sinif || o.sube || '-') + ' • ' + sonucSayisi + ' sonuç</div></div>' +
           '<button class="btn kirmizi kucuk" onclick="ogrenciSil(' + o.id + ', \'' + o.ad.replace(/'/g, "\\'") + '\')">🗑️ Sil</button>' +
         '</div>';
       });
@@ -1604,26 +1289,22 @@
       alan.innerHTML = html;
     }
 
-    function ogrenciSil(ogrenciId, ogrenciAd) {
-      if (!confirm('⚠️ "' + ogrenciAd + '" öğrencisi ve tüm sonuçları silinecek. Emin misiniz?')) return;
-      
-      veri = veriOku();
+    async function ogrenciSil(ogrenciId, ogrenciAd) {
+      if (!confirm('⚠️ "' + ogrenciAd + '" ve tüm sonuçları silinecek. Emin misiniz?')) return;
       veri.ogrenciler = veri.ogrenciler.filter(function(o) { return o.id !== ogrenciId; });
       veri.sonuclar = veri.sonuclar.filter(function(s) { return s.ogrenci_id !== ogrenciId; });
       if (veri.hedefler) delete veri.hedefler[ogrenciId];
-      veriKaydet(veri);
-      
-      mesaj('🗑️ "' + ogrenciAd + '" öğrencisi silindi');
+      await veriKaydet(veri);
+      mesaj('🗑️ "' + ogrenciAd + '" silindi');
       ogrenciListesiGoster();
       sinifFiltreDoldur();
       veriIstatistikGoster();
     }
 
     function ogrencileriYukle() {
-      veri = veriOku();
       const ogrenciSec = document.getElementById('ogrenciSec');
+      if (!ogrenciSec) return;
       const secili = ogrenciSec.value;
-      
       ogrenciSec.innerHTML = '<option value="">-- Öğrenci Seçin --</option>';
       veri.ogrenciler.slice().sort(function(a, b) { return a.ad.localeCompare(b.ad, 'tr'); }).forEach(function(o) {
         const opt = document.createElement('option');
@@ -1631,33 +1312,21 @@
         opt.textContent = o.ad + (o.sinif ? ' (' + o.sinif + ')' : '');
         ogrenciSec.appendChild(opt);
       });
-      
       if (secili) {
         ogrenciSec.value = secili;
         raporGoster(parseInt(secili));
       }
     }
 
-    document.getElementById('ogrenciSec').addEventListener('change', function() {
-      raporGoster(parseInt(this.value));
-    });
-
     function raporGoster(ogrenciId) {
       const raporAlan = document.getElementById('raporAlan');
-      
-      if (grafikInstance) {
-        grafikInstance.destroy();
-        grafikInstance = null;
-      }
-      
+      if (grafikInstance) { grafikInstance.destroy(); grafikInstance = null; }
       if (!ogrenciId) {
         raporAlan.innerHTML = '<p class="bos-mesaj">Raporu görmek için öğrenci seçin.</p>';
         return;
       }
-
       const ogr = veri.ogrenciler.find(function(o) { return o.id === ogrenciId; });
-      const liste = veri.sonuclar
-        .filter(function(s) { return s.ogrenci_id === ogrenciId; })
+      const liste = veri.sonuclar.filter(function(s) { return s.ogrenci_id === ogrenciId; })
         .map(function(s) {
           const d = veri.denemeler.find(function(x) { return x.id === s.deneme_id; });
           return Object.assign({}, s, { deneme_ad: d ? d.ad : '-', tarih: d ? d.tarih : '-' });
@@ -1675,82 +1344,38 @@
       const enKotu = Math.min.apply(null, netler);
 
       let html = '<div class="bilgi-kutu">👤 <b>' + ogr.ad + '</b> - ' + (ogr.sinif || '-') + ' / ' + (ogr.alan || '-') + '</div>';
-      
       html += '<div class="istatistik">' +
-          '<div class="istatistik-kart"><div class="sayi">' + liste.length + '</div><div class="etiket">Katıldığı Deneme</div></div>' +
-          '<div class="istatistik-kart"><div class="sayi">' + ortalama + '</div><div class="etiket">Ortalama Net</div></div>' +
-          '<div class="istatistik-kart"><div class="sayi">' + enIyi + ' / ' + enKotu + '</div><div class="etiket">En İyi / En Kötü</div></div>' +
+        '<div class="istatistik-kart"><div class="sayi">' + liste.length + '</div><div class="etiket">Katıldığı Deneme</div></div>' +
+        '<div class="istatistik-kart"><div class="sayi">' + ortalama + '</div><div class="etiket">Ortalama Net</div></div>' +
+        '<div class="istatistik-kart"><div class="sayi">' + enIyi + ' / ' + enKotu + '</div><div class="etiket">En İyi / En Kötü</div></div>' +
         '</div>';
 
-      html += '<div class="grafik-kart">' +
-        '<div class="grafik-baslik">📊 TOPLAM NET Sütun Grafiği</div>' +
-        '<div class="grafik-kutu"><canvas id="netGrafik"></canvas></div>' +
-        '</div>';
+      html += '<div class="grafik-kart"><div class="grafik-baslik">📊 TOPLAM NET Grafiği</div><div class="grafik-kutu"><canvas id="netGrafik"></canvas></div></div>';
 
-      html += '<div class="tablo-scroll"><table><thead><tr>' +
-        '<th>Deneme</th><th>Tarih</th>';
-      
-      DERSLER.forEach(function(d) {
-        html += '<th>' + d.ad + '</th>';
-      });
-      
+      html += '<div class="tablo-scroll"><table><thead><tr><th>Deneme</th><th>Tarih</th>';
+      DERSLER.forEach(function(d) { html += '<th>' + d.ad + '</th>'; });
       html += '<th class="toplam">TOPLAM</th></tr></thead><tbody>';
 
       liste.forEach(function(r, i) {
-        html += '<tr>' +
-          '<td class="sol">' + r.deneme_ad + '</td>' +
-          '<td>' + r.tarih + '</td>';
-        
+        html += '<tr><td class="sol">' + r.deneme_ad + '</td><td>' + r.tarih + '</td>';
         DERSLER.forEach(function(d) {
-          const mevcut = parseFloat(r[d.key] || 0);
-          const onceki = i > 0 ? parseFloat(liste[i - 1][d.key] || 0) : null;
-          
-          let okHtml = '';
-          if (onceki !== null) {
-            const fark = mevcut - onceki;
-            if (fark > 0.001) okHtml = '<span class="degisim-ok artis" title="' + fark.toFixed(2) + ' net artış">▲</span>';
-            else if (fark < -0.001) okHtml = '<span class="degisim-ok azalis" title="' + Math.abs(fark).toFixed(2) + ' net azalış">▼</span>';
-            else okHtml = '<span class="degisim-ok sabit" title="Değişim yok">—</span>';
-          }
-          
-          html += '<td><div class="ders-hucre">' + mevcut.toFixed(2) + okHtml + '</div></td>';
+          html += '<td>' + parseFloat(r[d.key] || 0).toFixed(2) + '</td>';
         });
-        
-        const mevcutTop = parseFloat(r.toplam_net || 0);
-        const oncekiTop = i > 0 ? parseFloat(liste[i - 1].toplam_net || 0) : null;
-        let okTop = '';
-        if (oncekiTop !== null) {
-          const farkTop = mevcutTop - oncekiTop;
-          if (farkTop > 0.001) okTop = '<span class="degisim-ok artis" title="' + farkTop.toFixed(2) + ' net artış">▲</span>';
-          else if (farkTop < -0.001) okTop = '<span class="degisim-ok azalis" title="' + Math.abs(farkTop).toFixed(2) + ' net azalış">▼</span>';
-          else okTop = '<span class="degisim-ok sabit" title="Değişim yok">—</span>';
-        }
-        
-        html += '<td><div class="ders-hucre"><strong>' + mevcutTop.toFixed(2) + '</strong>' + okTop + '</div></td>' +
-          '</tr>';
+        html += '<td><strong>' + parseFloat(r.toplam_net || 0).toFixed(2) + '</strong></td></tr>';
       });
 
       html += '</tbody></table></div>';
-
-      html += '<h2 style="margin-top: 30px; font-size: 18px;">📅 Haftalık / Aylık Özet</h2>';
-      html += haftalikAylikOzetUret(liste, ogr);
-
       raporAlan.innerHTML = html;
 
-      const etiketler = liste.map(function(r) {
-        return r.deneme_ad.replace('MİKROORİJİNAL ', '').replace('TYT ', '');
-      });
+      const etiketler = liste.map(function(r) { return r.deneme_ad; });
       const veriler = liste.map(function(r) { return parseFloat(r.toplam_net || 0); });
-      
       const maxNet = Math.max.apply(null, veriler);
       const minNet = Math.min.apply(null, veriler);
-      
       const renkler = veriler.map(function(v) {
         if (v === maxNet) return 'rgba(39, 174, 96, 0.85)';
         if (v === minNet) return 'rgba(231, 76, 60, 0.85)';
         return 'rgba(102, 126, 234, 0.85)';
       });
-      
       const kenarliklar = veriler.map(function(v) {
         if (v === maxNet) return '#27ae60';
         if (v === minNet) return '#e74c3c';
@@ -1763,310 +1388,53 @@
         data: {
           labels: etiketler,
           datasets: [
-            {
-              label: 'Toplam Net',
-              data: veriler,
-              backgroundColor: renkler,
-              borderColor: kenarliklar,
-              borderWidth: 2,
-              borderRadius: 8,
-              borderSkipped: false,
-              maxBarThickness: 80
-            },
-            {
-              label: 'Ortalama (' + ortalama + ')',
-              type: 'line',
-              data: new Array(liste.length).fill(parseFloat(ortalama)),
-              borderColor: '#e74c3c',
-              borderWidth: 2,
-              borderDash: [8, 5],
-              fill: false,
-              pointRadius: 0,
-              pointHoverRadius: 0
-            }
+            { label: 'Toplam Net', data: veriler, backgroundColor: renkler, borderColor: kenarliklar, borderWidth: 2, borderRadius: 8, maxBarThickness: 80 },
+            { label: 'Ortalama (' + ortalama + ')', type: 'line', data: new Array(liste.length).fill(parseFloat(ortalama)), borderColor: '#e74c3c', borderWidth: 2, borderDash: [8, 5], fill: false, pointRadius: 0 }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: true, position: 'top', labels: { font: { size: 13, weight: '600' }, padding: 15 } },
-            tooltip: {
-              backgroundColor: '#2c3e50',
-              titleFont: { size: 14, weight: '700' },
-              bodyFont: { size: 13 },
-              padding: 12,
-              cornerRadius: 8,
-              callbacks: {
-                label: function(context) {
-                  if (context.dataset.type === 'line') return 'Ortalama: ' + context.parsed.y.toFixed(2) + ' net';
-                  return 'Toplam Net: ' + context.parsed.y.toFixed(2);
-                }
-              }
-            }
+            legend: { display: true, position: 'top' },
+            tooltip: { backgroundColor: '#2c3e50', padding: 12, cornerRadius: 8 }
           },
           scales: {
-            y: { beginAtZero: true, title: { display: true, text: 'Toplam Net', font: { size: 13, weight: '600' } }, grid: { color: '#f0f0f0' } },
-            x: { title: { display: true, text: 'Denemeler', font: { size: 13, weight: '600' } }, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 0 } }
+            y: { beginAtZero: true, title: { display: true, text: 'Toplam Net' } },
+            x: { title: { display: true, text: 'Denemeler' }, grid: { display: false }, ticks: { maxRotation: 45 } }
           }
-        },
-        plugins: [{
-          id: 'sutunUstYazi',
-          afterDatasetsDraw: function(chart) {
-            const ctx = chart.ctx;
-            const veriSeti = chart.data.datasets[0];
-            const meta = chart.getDatasetMeta(0);
-            
-            ctx.save();
-            ctx.font = 'bold 13px Segoe UI';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
-            ctx.fillStyle = '#2c3e50';
-            
-            meta.data.forEach(function(bar, i) {
-              const deger = veriSeti.data[i];
-              if (deger !== undefined && deger !== null) {
-                ctx.fillText(deger.toFixed(1), bar.x, bar.y - 5);
-              }
-            });
-            
-            ctx.restore();
-          }
-        }]
+        }
       });
     }
 
-    function tarihObj(tarihStr) {
-      if (!tarihStr) return null;
-      const d = new Date(tarihStr);
-      return isNaN(d.getTime()) ? null : d;
-    }
-    
-    function haftaBaslangici(tarih) {
-      const d = new Date(tarih);
-      const gun = d.getDay();
-      const fark = gun === 0 ? -6 : 1 - gun;
-      d.setDate(d.getDate() + fark);
-      d.setHours(0, 0, 0, 0);
-      return d;
-    }
-    
-    function ayBaslangici(tarih) {
-      const d = new Date(tarih);
-      return new Date(d.getFullYear(), d.getMonth(), 1);
-    }
-    
-    function tarihAralik(liste, baslangic, bitis) {
-      return liste.filter(function(r) {
-        const t = tarihObj(r.tarih);
-        if (!t) return false;
-        return t >= baslangic && t < bitis;
-      });
-    }
-    
-    function ortalamaHesapla(arr) {
-      if (arr.length === 0) return 0;
-      return arr.reduce(function(s, r) { return s + parseFloat(r.toplam_net || 0); }, 0) / arr.length;
-    }
-    
-    function donemOzeti(denemeler, dersler) {
-      const ozet = {
-        sayi: denemeler.length,
-        ortNet: ortalamaHesapla(denemeler),
-        enIyi: 0,
-        enKotu: 0,
-        dersOrt: {}
-      };
-      
-      if (denemeler.length === 0) return ozet;
-      
-      const netler = denemeler.map(function(r) { return parseFloat(r.toplam_net || 0); });
-      ozet.enIyi = Math.max.apply(null, netler);
-      ozet.enKotu = Math.min.apply(null, netler);
-      
-      dersler.forEach(function(d) {
-        const toplam = denemeler.reduce(function(s, r) { return s + parseFloat(r[d.key] || 0); }, 0);
-        ozet.dersOrt[d.key] = toplam / denemeler.length;
-      });
-      
-      return ozet;
-    }
-    
-    function enCokDegisenDers(oncekiOrt, simdikiOrt, dersler) {
-      let enBuyukArtis = 0;
-      let enBuyukAzalis = 0;
-      let artanDers = null;
-      let azalanDers = null;
-      
-      dersler.forEach(function(d) {
-        if (oncekiOrt[d.key] === undefined || simdikiOrt[d.key] === undefined) return;
-        const fark = simdikiOrt[d.key] - oncekiOrt[d.key];
-        if (fark > enBuyukArtis) {
-          enBuyukArtis = fark;
-          artanDers = { ad: d.ad, fark: fark };
-        }
-        if (fark < enBuyukAzalis) {
-          enBuyukAzalis = fark;
-          azalanDers = { ad: d.ad, fark: fark };
-        }
-      });
-      
-      return { artan: artanDers, azalan: azalanDers };
-    }
-    
-    function haftalikAylikOzetUret(liste, ogr) {
-      if (!liste || liste.length === 0) {
-        return '<div class="ozet-bos">Özet için yeterli veri yok.</div>';
-      }
-      
-      const simdi = new Date();
-      simdi.setHours(23, 59, 59, 999);
-      
-      const buHaftaBas = haftaBaslangici(simdi);
-      const gecenHaftaBas = new Date(buHaftaBas);
-      gecenHaftaBas.setDate(gecenHaftaBas.getDate() - 7);
-      
-      const buHafta = tarihAralik(liste, buHaftaBas, new Date(buHaftaBas.getTime() + 7 * 86400000));
-      const gecenHafta = tarihAralik(liste, gecenHaftaBas, buHaftaBas);
-      
-      const buHaftaOzet = donemOzeti(buHafta, DERSLER);
-      const gecenHaftaOzet = donemOzeti(gecenHafta, DERSLER);
-      
-      const haftaFark = buHaftaOzet.sayi > 0 && gecenHaftaOzet.sayi > 0
-        ? buHaftaOzet.ortNet - gecenHaftaOzet.ortNet
-        : null;
-      
-      const buAyBas = ayBaslangici(simdi);
-      const gecenAyBas = new Date(buAyBas);
-      gecenAyBas.setMonth(gecenAyBas.getMonth() - 1);
-      
-      const buAy = tarihAralik(liste, buAyBas, new Date(buAyBas.getFullYear(), buAyBas.getMonth() + 1, 1));
-      const gecenAy = tarihAralik(liste, gecenAyBas, buAyBas);
-      
-      const buAyOzet = donemOzeti(buAy, DERSLER);
-      const gecenAyOzet = donemOzeti(gecenAy, DERSLER);
-      
-      const ayFark = buAyOzet.sayi > 0 && gecenAyOzet.sayi > 0
-        ? buAyOzet.ortNet - gecenAyOzet.ortNet
-        : null;
-      
-      const son4Hafta = [];
-      for (let i = 0; i < 4; i++) {
-        const bas = new Date(buHaftaBas);
-        bas.setDate(bas.getDate() - i * 7);
-        const bit = new Date(bas);
-        bit.setDate(bit.getDate() + 7);
-        const haftaDenemeler = tarihAralik(liste, bas, bit);
-        son4Hafta.unshift({
-          etiket: i === 0 ? 'Bu Hafta' : i + ' Hafta Önce',
-          sayi: haftaDenemeler.length,
-          ortNet: ortalamaHesapla(haftaDenemeler)
-        });
-      }
-      
-      function farkHTML(fark) {
-        if (fark === null) return '<span class="deger notr">—</span>';
-        if (Math.abs(fark) < 0.05) return '<span class="deger notr">—</span>';
-        if (fark > 0) return '<span class="deger artis">+' + fark.toFixed(2) + ' ▲</span>';
-        return '<span class="deger azalis">' + fark.toFixed(2) + ' ▼</span>';
-      }
-      
-      let html = '<div class="ozet-grid">';
-      
-      html += '<div class="ozet-kart">' +
-        '<div class="ozet-baslik">📅 Bu Hafta</div>';
-      
-      if (buHaftaOzet.sayi === 0) {
-        html += '<div class="ozet-bos">Bu hafta deneme yok.</div>';
-      } else {
-        html += '<div class="ozet-satir"><span class="etiket">Deneme Sayısı</span><span class="deger">' + buHaftaOzet.sayi + '</span></div>' +
-          '<div class="ozet-satir"><span class="etiket">Ortalama Net</span><span class="deger">' + buHaftaOzet.ortNet.toFixed(2) + '</span></div>' +
-          '<div class="ozet-satir"><span class="etiket">En İyi / En Kötü</span><span class="deger">' + buHaftaOzet.enIyi.toFixed(1) + ' / ' + buHaftaOzet.enKotu.toFixed(1) + '</span></div>' +
-          '<div class="ozet-satir"><span class="etiket">Geçen Haftaya Göre</span>' + farkHTML(haftaFark) + '</div>';
-        
-        if (haftaFark !== null) {
-          const dersDegisim = enCokDegisenDers(gecenHaftaOzet.dersOrt, buHaftaOzet.dersOrt, DERSLER);
-          if (dersDegisim.artan) {
-            html += '<div class="ozet-satir"><span class="etiket">📈 En Çok Artan</span><span class="deger artis">' + dersDegisim.artan.ad + ' (+' + dersDegisim.artan.fark.toFixed(1) + ')</span></div>';
-          }
-          if (dersDegisim.azalan) {
-            html += '<div class="ozet-satir"><span class="etiket">📉 En Çok Azalan</span><span class="deger azalis">' + dersDegisim.azalan.ad + ' (' + dersDegisim.azalan.fark.toFixed(1) + ')</span></div>';
-          }
-        }
-      }
-      
-      html += '</div>';
-      
-      html += '<div class="ozet-kart ay">' +
-        '<div class="ozet-baslik">📆 Bu Ay</div>';
-      
-      if (buAyOzet.sayi === 0) {
-        html += '<div class="ozet-bos">Bu ay deneme yok.</div>';
-      } else {
-        html += '<div class="ozet-satir"><span class="etiket">Deneme Sayısı</span><span class="deger">' + buAyOzet.sayi + '</span></div>' +
-          '<div class="ozet-satir"><span class="etiket">Ortalama Net</span><span class="deger">' + buAyOzet.ortNet.toFixed(2) + '</span></div>' +
-          '<div class="ozet-satir"><span class="etiket">En İyi / En Kötü</span><span class="deger">' + buAyOzet.enIyi.toFixed(1) + ' / ' + buAyOzet.enKotu.toFixed(1) + '</span></div>' +
-          '<div class="ozet-satir"><span class="etiket">Geçen Aya Göre</span>' + farkHTML(ayFark) + '</div>';
-        
-        if (ayFark !== null) {
-          const dersDegisimAy = enCokDegisenDers(gecenAyOzet.dersOrt, buAyOzet.dersOrt, DERSLER);
-          if (dersDegisimAy.artan) {
-            html += '<div class="ozet-satir"><span class="etiket">📈 En Çok Artan</span><span class="deger artis">' + dersDegisimAy.artan.ad + ' (+' + dersDegisimAy.artan.fark.toFixed(1) + ')</span></div>';
-          }
-          if (dersDegisimAy.azalan) {
-            html += '<div class="ozet-satir"><span class="etiket">📉 En Çok Azalan</span><span class="deger azalis">' + dersDegisimAy.azalan.ad + ' (' + dersDegisimAy.azalan.fark.toFixed(1) + ')</span></div>';
-          }
-        }
-      }
-      
-      html += '</div></div>';
-      
-      html += '<div class="grafik-kart" style="margin-top: 20px;">' +
-        '<div class="grafik-baslik">📊 Son 4 Hafta Karşılaştırma</div>' +
-        '<table class="ozet-mini-tablo">' +
-          '<thead><tr><th>Dönem</th><th>Deneme</th><th>Ortalama Net</th></tr></thead>' +
-          '<tbody>';
-      
-      son4Hafta.forEach(function(h) {
-        const aktif = h.etiket === 'Bu Hafta' ? ' class="aktif-hafta"' : '';
-        html += '<tr' + aktif + '>' +
-          '<td>' + h.etiket + '</td>' +
-          '<td>' + h.sayi + '</td>' +
-          '<td>' + (h.sayi > 0 ? h.ortNet.toFixed(2) : '—') + '</td>' +
-        '</tr>';
-      });
-      
-      html += '</tbody></table></div>';
-      
-      return html;
-    }
-
+    // ═══════════════════════════════════════════════════════
+    // İSTATİSTİK & VERİ YÖNETİMİ
+    // ═══════════════════════════════════════════════════════
     function veriIstatistikGoster() {
-      veri = veriOku();
-      document.getElementById('veriIstatistik').innerHTML =
-        '<table><tbody>' +
-          '<tr><td><strong>Deneme sayısı:</strong></td><td>' + veri.denemeler.length + '</td></tr>' +
-          '<tr><td><strong>Öğrenci sayısı:</strong></td><td>' + veri.ogrenciler.length + '</td></tr>' +
-          '<tr><td><strong>Sonuç kaydı:</strong></td><td>' + veri.sonuclar.length + '</td></tr>' +
+      const alan = document.getElementById('veriIstatistik');
+      if (!alan) return;
+      alan.innerHTML = '<table><tbody>' +
+        '<tr><td><strong>Deneme sayısı:</strong></td><td>' + veri.denemeler.length + '</td></tr>' +
+        '<tr><td><strong>Öğrenci sayısı:</strong></td><td>' + veri.ogrenciler.length + '</td></tr>' +
+        '<tr><td><strong>Sonuç kaydı:</strong></td><td>' + veri.sonuclar.length + '</td></tr>' +
         '</tbody></table>';
     }
 
-    function tumVeriyiSil() {
-      if (confirm('⚠️ TÜM VERİLER SİLİNECEK!\n\nEmin misiniz?')) {
-        if (confirm('Bu işlem GERİ ALINAMAZ! Son kez onaylıyor musunuz?')) {
-          localStorage.removeItem('denemeSistemi');
-          veri = { denemeler: [], ogrenciler: [], sonuclar: [], hedefler: {} };
-          mesaj('🗑️ Tüm veriler silindi', 'uyari');
-          denemeleriYukle();
-          veriIstatistikGoster();
-          sinifFiltreDoldur();
-          ogrenciListesiGoster();
-        }
-      }
+    async function tumVeriyiSil() {
+      if (!confirm('⚠️ TÜM VERİLER SİLİNECEK!\n\nEmin misiniz?')) return;
+      if (!confirm('Bu işlem GERİ ALINAMAZ! Son kez onaylıyor musunuz?')) return;
+      const bosVeri = { denemeler: [], ogrenciler: [], sonuclar: [], hedefler: {} };
+      await veriKaydet(bosVeri);
+      veri = bosVeri;
+      mesaj('🗑️ Tüm veriler silindi', 'uyari');
+      denemeleriYukle();
+      veriIstatistikGoster();
+      sinifFiltreDoldur();
+      ogrenciListesiGoster();
     }
 
     function veriYedekle() {
-      const dataStr = JSON.stringify(veriOku(), null, 2);
+      const dataStr = JSON.stringify(veri, null, 2);
       const blob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2079,18 +1447,15 @@
     function yedekYukleIsle(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = async function(e) {
         try {
           const data = JSON.parse(e.target.result);
           if (!data.denemeler || !data.ogrenciler || !data.sonuclar) {
             return mesaj('❌ Geçersiz yedek dosyası', 'hata');
           }
           if (!confirm('Mevcut veriler SİLİNECEK ve yedek yüklenecek. Onaylıyor musunuz?')) return;
-          
-          veriKaydet(data);
-          veri = data;
+          await veriKaydet(data);
           mesaj('✅ Yedek yüklendi');
           veriIstatistikGoster();
           denemeleriYukle();
@@ -2103,6 +1468,72 @@
       reader.readAsText(file);
       event.target.value = '';
     }
+
+    // ═══════════════════════════════════════════════════════
+    // EVENT LISTENER'LAR
+    // ═══════════════════════════════════════════════════════
+    document.getElementById('girisSifre').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') girisYap();
+    });
+
+    document.getElementById('denemeSec').addEventListener('change', function() {
+      sonuclariGoster(parseInt(this.value));
+    });
+
+    document.getElementById('sinifFiltre').addEventListener('change', function() {
+      const denemeId = parseInt(document.getElementById('denemeSec').value);
+      sonuclariGoster(denemeId);
+    });
+
+    document.getElementById('veliOgrenciSec').addEventListener('change', function() {
+      veliGoster(parseInt(this.value));
+    });
+
+    document.getElementById('ogrenciSec').addEventListener('change', function() {
+      raporGoster(parseInt(this.value));
+    });
+
+    // Excel zone
+    const excelZone = document.getElementById('excelZone');
+    const excelFileInput = document.getElementById('excelFile');
+    excelZone.addEventListener('click', function() { excelFileInput.click(); });
+    excelZone.addEventListener('dragover', function(e) { e.preventDefault(); excelZone.classList.add('dragover'); });
+    excelZone.addEventListener('dragleave', function() { excelZone.classList.remove('dragover'); });
+    excelZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      excelZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) excelDosyaIsle(e.dataTransfer.files[0]);
+    });
+    excelFileInput.addEventListener('change', function(e) {
+      if (e.target.files.length > 0) excelDosyaIsle(e.target.files[0]);
+    });
+
+    // DOMContentLoaded
+    window.addEventListener('DOMContentLoaded', function() {
+      if (sessionStorage.getItem('denemeGiris') === '1') {
+        document.getElementById('girisEkrani').classList.add('gizli');
+        setTimeout(function() {
+          denemeleriYukle();
+          veriIstatistikGoster();
+          hedefSelectDoldur();
+          sinifFiltreDoldur();
+        }, 800);
+      } else {
+        setTimeout(function() {
+          document.getElementById('girisSifre').focus();
+        }, 100);
+      }
+    });
+
+    // Firebase timeout kontrolü
+    setTimeout(function() {
+      if (!firebaseHazirMi) {
+        baglantiDurumGuncelle('hata');
+        console.error('Firebase 10 saniye içinde bağlanamadı. Console\'daki hataları kontrol edin.');
+      }
+    }, 10000);
+
+    console.log('✅ Script yüklendi. Firebase bekleniyor...');
   </script>
 </body>
 </html>
