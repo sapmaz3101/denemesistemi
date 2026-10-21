@@ -429,7 +429,7 @@
       <div id="sayfaKarsilastir" class="sayfa">
         <h2>📊 Öğrenci - Deneme Karşılaştırma Tablosu</h2>
         <div class="bilgi-kutu">
-          <strong>📌 Kullanım:</strong> Aşağıdaki denemelerden karşılaştırmak istediklerinizi <b>kutucuklara tıklayarak</b> seçin. <b>Birden fazla deneme</b> seçebilirsiniz. Ardından "Tabloyu Göster" butonuna basın.
+          <strong>📌 Kullanım:</strong> Aşağıdaki denemelerden karşılaştırmak istediklerinizi <b>kutucuklara tıklayarak</b> seçin. <b>Birden fazla deneme</b> seçebilirsiniz. Ardından "Tabloyu Göster" butonuna basın. Tablo, öğrencileri seçili denemelerdeki <b>ortalama nete göre büyükten küçüğe</b> sıralar.
         </div>
 
         <div class="kart yesil">
@@ -1515,7 +1515,7 @@
     }
 
     // ═══════════════════════════════════════════════════════
-    // KARŞILAŞTIRMA TABLOSU (KUTUCUKLU)
+    // KARŞILAŞTIRMA TABLOSU (KUTUCUKLU + ORTALAMAYA GÖRE SIRALI)
     // ═══════════════════════════════════════════════════════
     function karsilastirDenemeleriDoldur() {
       const alan = document.getElementById('karsilastirDenemeKutular');
@@ -1585,15 +1585,14 @@
         .filter(function(d) { return karsilastirSeciliIdler.indexOf(d.id) !== -1; })
         .sort(function(a, b) { return a.tarih.localeCompare(b.tarih) || a.id - b.id; });
 
-      const ogrenciler = veri.ogrenciler.slice().sort(function(a, b) {
-        return a.ad.localeCompare(b.ad, 'tr');
-      });
+      let ogrenciler = veri.ogrenciler.slice();
 
       if (ogrenciler.length === 0) {
         alan.innerHTML = '<p class="bos-mesaj">Sistemde kayıtlı öğrenci yok.</p>';
         return;
       }
 
+      // ✅ Sonuç haritası
       const sonucMap = {};
       veri.sonuclar.forEach(function(s) {
         if (karsilastirSeciliIdler.indexOf(s.deneme_id) !== -1) {
@@ -1602,6 +1601,7 @@
         }
       });
 
+      // ✅ Her denemenin en yüksek neti
       const denemeEnYuksek = {};
       seciliDenemeler.forEach(function(d) {
         let enY = -Infinity;
@@ -1612,6 +1612,7 @@
         denemeEnYuksek[d.id] = enY;
       });
 
+      // ✅ Öğrenci ortalamalarını ÖNCEDEN hesapla (sıralama için)
       const ogrenciOrtalamalari = {};
       ogrenciler.forEach(function(o) {
         const netler = [];
@@ -1625,6 +1626,18 @@
           : null;
       });
 
+      // ✅ ORTALAMAYA GÖRE BÜYÜKTEN KÜÇÜĞE SIRALA
+      ogrenciler.sort(function(a, b) {
+        const ortA = ogrenciOrtalamalari[a.id];
+        const ortB = ogrenciOrtalamalari[b.id];
+        if (ortA === null && ortB === null) return a.ad.localeCompare(b.ad, 'tr');
+        if (ortA === null) return 1;
+        if (ortB === null) return -1;
+        if (ortB !== ortA) return ortB - ortA;
+        return a.ad.localeCompare(b.ad, 'tr');
+      });
+
+      // ✅ Genel ortalama
       const gecerliOrtalamalar = Object.values(ogrenciOrtalamalari).filter(function(v) { return v !== null; });
       const genelOrtalama = gecerliOrtalamalar.length > 0
         ? gecerliOrtalamalar.reduce(function(s, v) { return s + v; }, 0) / gecerliOrtalamalar.length
@@ -1632,9 +1645,11 @@
 
       let html = '<div class="bilgi-kutu" style="background:#e0f2fe;border-left-color:#0369a1;color:#0c4a6e;">' +
         '📋 <b>' + ogrenciler.length + '</b> öğrenci • <b>' + seciliDenemeler.length + '</b> deneme • ' +
-        'Genel Ortalama: <b>' + genelOrtalama.toFixed(2) + '</b></div>';
+        'Genel Ortalama: <b>' + genelOrtalama.toFixed(2) + '</b>' +
+        '<br><small>Liste, seçili denemelerdeki <b>ortalama nete göre büyükten küçüğe</b> sıralanmıştır.</small></div>';
 
       html += '<div class="tablo-scroll"><table class="karsilastir-tablo"><thead><tr>' +
+        '<th style="text-align:left;">Sıra</th>' +
         '<th style="text-align:left;">Öğrenci</th>' +
         '<th>Şube</th>';
 
@@ -1644,8 +1659,11 @@
 
       html += '<th class="toplam">ORTALAMA</th></tr></thead><tbody>';
 
-      ogrenciler.forEach(function(o) {
-        html += '<tr><td class="sol" style="font-weight:600;">' + o.ad + '</td>' +
+      ogrenciler.forEach(function(o, index) {
+        const ort = ogrenciOrtalamalari[o.id];
+
+        html += '<tr><td class="sol" style="font-weight:700;color:#667eea;">' + (index + 1) + '</td>' +
+          '<td class="sol" style="font-weight:600;">' + o.ad + '</td>' +
           '<td>' + (o.sinif || o.sube || '-') + '</td>';
 
         seciliDenemeler.forEach(function(d) {
@@ -1658,11 +1676,11 @@
           }
         });
 
-        const ort = ogrenciOrtalamalari[o.id];
         html += '<td style="background:#f0f4ff;"><strong>' + (ort !== null ? ort.toFixed(2) : '-') + '</strong></td></tr>';
       });
 
       html += '<tr class="ortalama-satir">' +
+        '<td class="sol">-</td>' +
         '<td class="sol">📊 DENEME ORTALAMASI</td>' +
         '<td>-</td>';
 
@@ -1685,7 +1703,7 @@
     }
 
     // ═══════════════════════════════════════════════════════
-    // ✅ TOPLU KARNE (Son 3 deneme + Son deneme yeşil)
+    // TOPLU KARNE (Son 3 deneme + Son deneme yeşil)
     // ═══════════════════════════════════════════════════════
     function topluKarneDenemeleriDoldur() {
       const sel = document.getElementById('topluKarneDenemeSec');
